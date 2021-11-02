@@ -129,7 +129,7 @@ if __name__=='__main__':
                         # help = "mel or world features.")
 
     args = parser.parse_args()
-    config = yaml.load(open('./config.yaml', 'r'))
+    config = yaml.safe_load(open('./config.yaml', 'r'))
 
     # checkpoint_dir = '../checkpoints/' + args.model + '/' + args.iteration + '.ckpt'
     checkpoint_dir = args.checkpoint
