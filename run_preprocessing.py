@@ -16,11 +16,24 @@ from utils.data_preprocessing_utils import get_wav_and_labels
 from utils.preprocess_world import world_features, cal_mcep, get_f0_stats
 
 
-def copy_files(iemocap_dir, output_dir):
+def copy_files(source_dir, output_dir):
 
     """
-    Make initial directory structure needed for preprocessing. Takes IEMOCAP
+    Make initial directory structure needed for preprocessing. Takes source directory
     and puts all audio files in one folder, and all annotations in another.
+
+    See the official repo for source_dir == IEMOCAP directory format
+    Assumes source_dir has the same format as the data in this paper:
+    - https://kunzhou9646.github.io/controllable-evc/
+
+    Source directory:
+    - speaker directory (e.g., 0001)
+        - annotation.txt (e.g., 0001.txt)
+            - tab-delimited: [wav file name without .wav extension] [speech text] [emotion label]
+            - emotion labels are Angry, Happy, Neutral, Sad, Surprise
+        - emotion directory (e.g., Angry)
+            - train/test/validation directory
+                - .wav files
     """
     audio_output_dir = os.path.join(output_dir, 'audio')
     annotations_output_dir = os.path.join(output_dir, 'annotations')
@@ -30,38 +43,30 @@ def copy_files(iemocap_dir, output_dir):
     if not os.path.exists(annotations_output_dir):
         os.mkdir(annotations_output_dir)
 
-    for session in os.listdir(iemocap_dir):
-        if not session.startswith("Session"):
+    for speaker in os.listdir(source_dir):
+        speaker_dir = os.path.join(source_dir, speaker)
+
+        if not os.path.isdir(speaker_dir):
             continue
 
-        session_dir = os.path.join(iemocap_dir, session)
+        annotation_file = os.path.join(speaker_dir, speaker + ".txt")
+        dest_file = os.path.join(annotations_output_dir, annotation_file)
+        # Copy annotations to dest annotations folder
+        if not os.path.exists(dest_file):
+            copyfile(src_file, dest_file)
 
-        annotations_dir = os.path.join(session_dir, "dialog", "EmoEvaluation")
-        for filename in os.listdir(annotations_dir):
-            if not filename.endswith(".txt"):
-                continue
+        for _, _, files in os.walk(speaker_dir):
+            for file in files:
+                if file.endswith(".wav"):
+                    filename = os.path.basename(file)
+                    src_file = os.path.join(speaker_dir, file)
+                    dest_file = os.path.join(audio_output_dir, filename)
 
-            src_file = os.path.join(annotations_dir, filename)
-            dest_file = os.path.join(annotations_output_dir, filename)
-            if not os.path.exists(dest_file):
-                copyfile(src_file, dest_file)
+                    # Copy wav files to one output directory
+                    if not os.path.exists(dest_file):
+                        copyfile(src_file, dest_file)
 
-        wav_dir = os.path.join(session_dir, "sentences", "wav")
-        for foldername in os.listdir(wav_dir):
-            if not foldername.startswith("Ses"):
-                continue
-
-            subsession_dir = os.path.join(wav_dir, foldername)
-            for filename in os.listdir(subsession_dir):
-                if not filename.endswith(".wav"):
-                    continue
-
-                src_file = os.path.join(subsession_dir, filename)
-                dest_file = os.path.join(audio_output_dir, filename)
-                if not os.path.exists(dest_file):
-                    copyfile(src_file, dest_file)
-
-        print(session + " completed.")
+        print("Speaker", speaker, "completed.")
 
 
 def generate_world_features(filenames, data_dir):
