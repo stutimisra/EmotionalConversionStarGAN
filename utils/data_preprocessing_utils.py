@@ -17,23 +17,20 @@ from librosa.util import find_files
 
 
 def get_speaker_from_filename(filename):
-    code = filename[4] + filename[-8]
+    code = filename.split('_')[0]
 
-    conversion = {'1F': 0, '1M': 1, '2F': 2, '2M': 3, '3F': 4, '3M': 5, '4F': 6, '4M': 7, '5F': 8, '5M': 9}
-
-    label = conversion[code]
+    # conversion = {'1F': 0, '1M': 1, '2F': 2, '2M': 3, '3F': 4, '3M': 5, '4F': 6, '4M': 7, '5F': 8, '5M': 9}
+    # label = conversion[code]
+    label = int(code)
 
     return label
 
 
 def get_emotion_from_label(category):
-
-    if category == 'xxx' or category == 'dis' or category == 'fea' or category == 'oth':
-        return -1
-    if category == 'exc' or category == 'fru' or category == 'sur':
+    if category == 'Surprised':
         return -1
 
-    conversion = {'ang': 0, 'sad': 1, 'hap': 2, 'neu': 3}
+    conversion = {'Neutral': 0, 'Happy': 1, 'Sad': 2, 'Angry': 3}
 
     label = conversion[category]
 
@@ -41,7 +38,7 @@ def get_emotion_from_label(category):
 
 
 def getOneHot(label, n_labels):
-
+    """ Not used anywhere in code base? """
     onehot = np.zeros(n_labels)
     onehot[label] = 1
 
@@ -69,74 +66,76 @@ def cont2list(cont, binned=False):
         return list
 
 
-def concatenate_labels(emo, speaker, dims, dims_dis):
+def concatenate_labels(emo, speaker):
 
-    all_labels = torch.zeros(8)
+    num_labels = 2
+    all_labels = torch.zeros(num_labels)
 
-    # for i, row in enumerate(all_labels):
     all_labels[0] = emo
     all_labels[1] = speaker
+
+    """
     all_labels[2] = dims[0]
     all_labels[3] = dims[1]
     all_labels[4] = dims[2]
     all_labels[5] = dims_dis[0]
     all_labels[6] = dims_dis[1]
     all_labels[7] = dims_dis[2]
+    """
 
     return all_labels
 
 
 def get_wav_and_labels(filename, data_dir):
+    """
+    Assumes the data is in the format as specified in run_preprocessing.py
+    """
 
+    speaker = filename.split('_')[0]
     wav_path = os.path.join(data_dir, "audio", filename)
-    label_path = os.path.join(data_dir, "annotations", filename[:-9] + ".txt")
+    label_path = os.path.join(data_dir, "annotations", speaker + ".txt")
 
     with open(label_path, 'r') as label_file:
 
-        category = ""
-        dimensions = ""
-        speaker = ""
+        category = None
+        # dimensions = None
+        speaker = None
 
         for row in label_file:
-            if row[0] == '[':
-                split = row.split("\t")
-                if split[1] == filename[:-4]:
-                    category = get_emotion_from_label(split[2])
-                    dimensions = cont2list(split[3])
-                    dimensions_dis = cont2list(split[3], binned = True)
-                    speaker = get_speaker_from_filename(filename)
+            split = row.split("\t")
+            category = get_emotion_from_label(split[2])
+            # dimensions = cont2list(split[3])
+            # dimensions_dis = cont2list(split[3], binned = True)
+            speaker = get_speaker_from_filename(filename)
 
     audio = audio_utils.load_wav(wav_path)
     audio = np.array(audio, dtype = np.float32)
-    labels = concatenate_labels(category, speaker, dimensions, dimensions_dis)
+    labels = concatenate_labels(category, speaker)
 
     return audio, labels
 
 
 def get_samples_and_labels(filename, config):
-
+    speaker = filename.split('_')[0]
     wav_path = config['data']['sample_set_dir'] + "/" + filename
-    folder = filename[:-9]
-    label_path = config['data']['dataset_dir'] + "/Annotations/" + folder + ".txt"
+    label_path = config['data']['dataset_dir'] + "/Annotations/" + speaker + ".txt"
 
     with open(label_path, 'r') as label_file:
 
-        category = ""
-        dimensions = ""
-        speaker = ""
+        category = None
+        # dimensions = None
+        speaker = None
 
         for row in label_file:
-            if row[0] == '[':
-                split = row.split("\t")
-                if split[1] == filename[:-4]:
-                    category = get_emotion_from_label(split[2])
-                    dimensions = cont2list(split[3])
-                    dimensions_dis = cont2list(split[3], binned = True)
-                    speaker = get_speaker_from_filename(filename)
+            split = row.split("\t")
+            category = get_emotion_from_label(split[2])
+            # dimensions = cont2list(split[3])
+            # dimensions_dis = cont2list(split[3], binned = True)
+            speaker = get_speaker_from_filename(filename)
 
     audio = audio_utils.load_wav(wav_path)
     audio = np.array(audio, dtype = np.float32)
-    labels = concatenate_labels(category, speaker, dimensions, dimensions_dis)
+    labels = concatenate_labels(category, speaker)
 
     return audio, labels
 
