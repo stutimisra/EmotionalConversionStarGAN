@@ -19,8 +19,6 @@ from librosa.util import find_files
 def get_speaker_from_filename(filename):
     code = filename.split('_')[0]
 
-    # conversion = {'1F': 0, '1M': 1, '2F': 2, '2M': 3, '3F': 4, '3M': 5, '4F': 6, '4M': 7, '5F': 8, '5M': 9}
-    # label = conversion[code]
     label = int(code)
 
     return label
@@ -75,57 +73,19 @@ def concatenate_labels(emo, speaker):
     all_labels[0] = emo
     all_labels[1] = speaker
 
-    """
-    all_labels[2] = dims[0]
-    all_labels[3] = dims[1]
-    all_labels[4] = dims[2]
-    all_labels[5] = dims_dis[0]
-    all_labels[6] = dims_dis[1]
-    all_labels[7] = dims_dis[2]
-    """
-
     return all_labels
 
 
-def get_wav_and_labels(filename, data_dir):
+def get_wav_and_labels(filename, data_dir, annotations_dict):
     """
     Assumes the data is in the format as specified in run_preprocessing.py
     """
-
-    speaker = filename.split('_')[0]
     wav_path = os.path.join(data_dir, "audio", filename)
-    label_path = os.path.join(data_dir, "annotations", speaker + ".txt")
-
-    def read_stream(label_stream):
-        category = None
-        speaker = None
-
-        for row in label_file:
-            split = row.split("\t")
-            if len(split) >= 3:
-                category = get_emotion_from_label(split[2])
-                speaker = get_speaker_from_filename(filename)
-
-        return category, speaker
-
-    # Determine the encoding
-    def try_encoding(file_path, encoding):
-        stream = open(label_path, 'r', encoding=encoding)
-        stream.readlines()
-        stream.seek(0)
-        return encoding
-
-    try:
-        encoding = try_encoding(label_path, 'utf-16')
-    except (UnicodeDecodeError, UnicodeError):
-        encoding = try_encoding(label_path, 'unicode-escape')
-
-    with open(label_path, 'r', encoding=encoding) as label_file:
-        category, speaker = read_stream(label_file)
 
     audio = audio_utils.load_wav(wav_path)
-    audio = np.array(audio, dtype = np.float32)
-    labels = concatenate_labels(category, speaker)
+    audio = np.array(audio, dtype=np.float32)
+    filefront = filename.split(".")[0]
+    labels = annotations_dict[filefront]
 
     return audio, labels
 
@@ -167,7 +127,44 @@ def get_filenames(data_dir):
     return filenames
 
 
+def read_annotations(dir):
+    """
+    Read all labels inside dir into a dictionary
+    """
+    annotations = {}
+
+    for file in os.listdir(dir):
+        if file.endswith(".txt"):
+            file_path = os.path.join(dir, file)
+
+            # Determine the encoding
+            def try_encoding(path, encoding):
+                stream = open(path, 'r', encoding=encoding)
+                stream.readlines()
+                stream.seek(0)
+                return encoding
+
+            try:
+                encoding = try_encoding(file_path, 'utf-16')
+            except (UnicodeDecodeError, UnicodeError):
+                encoding = try_encoding(file_path, 'unicode-escape')
+
+            with open(file_path, 'r', encoding=encoding) as label_file:
+                for row in label_file:
+                    split = row.split("\t")
+                    if len(split) >= 3:
+                        category = get_emotion_from_label(split[2])
+                        speaker = get_speaker_from_filename(file)
+                        labels = concatenate_labels(category, speaker)
+                        annotations[split[0]] = labels
+
+    return annotations
+
+
 if __name__ == '__main__':
+    """
+    I don't think this code is actually run. (Eric)
+    """
 
     min_length = 0 # actual is 59
     max_length = 688
