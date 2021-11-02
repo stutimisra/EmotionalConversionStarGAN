@@ -154,7 +154,7 @@ def read_annotations(dir):
                     split = row.split("\t")
                     if len(split) >= 3:
                         category = get_emotion_from_label(split[2])
-                        speaker = get_speaker_from_filename(file)
+                        speaker = int(file.split(".")[0])
                         labels = concatenate_labels(category, speaker)
                         annotations[split[0]] = labels
 
