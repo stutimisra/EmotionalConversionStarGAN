@@ -50,16 +50,16 @@ def copy_files(source_dir, output_dir):
             continue
 
         annotation_file = os.path.join(speaker_dir, speaker + ".txt")
-        dest_file = os.path.join(annotations_output_dir, annotation_file)
+        dest_file = os.path.join(annotations_output_dir, speaker + ".txt")
         # Copy annotations to dest annotations folder
         if not os.path.exists(dest_file):
-            copyfile(src_file, dest_file)
+            copyfile(annotation_file, dest_file)
 
-        for _, _, files in os.walk(speaker_dir):
+        for root, _, files in os.walk(speaker_dir):
             for file in files:
                 if file.endswith(".wav"):
                     filename = os.path.basename(file)
-                    src_file = os.path.join(speaker_dir, file)
+                    src_file = os.path.join(root, file)
                     dest_file = os.path.join(audio_output_dir, filename)
 
                     # Copy wav files to one output directory
