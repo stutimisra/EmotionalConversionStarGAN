@@ -93,9 +93,9 @@ def generate_world_features(filenames, data_dir):
         wav = np.array(wav, dtype=np.float64)
         labels = np.array(labels)
 
-        coded_sp_name = os.path.join(world_dir, f[:-4] + ".npy")
-        label_name = os.path.join(labels_dir, f[:-4] + ".npy")
-        f0_name = os.path.join(f0_dir, f[:-4] + ".npy")
+        coded_sp_name = os.path.join(world_dir, f + ".npy")
+        label_name = os.path.join(labels_dir, f + ".npy")
+        f0_name = os.path.join(f0_dir, f + ".npy")
         if os.path.exists(coded_sp_name) and os.path.exists(label_name) and os.path.exists(f0_name):
             worlds_made += 1
             continue
@@ -215,5 +215,8 @@ if __name__ == '__main__':
                         help="Directory to copy audio and annotation files to.")
 
     args = parser.parse_args()
+
+    if not os.path.exists(args.data_dir):
+        os.mkdir(args.data_dir)
 
     run_preprocessing(args)

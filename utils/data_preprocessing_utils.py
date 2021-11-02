@@ -27,7 +27,8 @@ def get_speaker_from_filename(filename):
 
 
 def get_emotion_from_label(category):
-    if category == 'Surprised':
+    category = category.strip()
+    if category == 'Surprise' or category == '':
         return -1
 
     conversion = {'Neutral': 0, 'Happy': 1, 'Sad': 2, 'Angry': 3}
@@ -95,18 +96,32 @@ def get_wav_and_labels(filename, data_dir):
     wav_path = os.path.join(data_dir, "audio", filename)
     label_path = os.path.join(data_dir, "annotations", speaker + ".txt")
 
-    with open(label_path, 'r') as label_file:
-
+    def read_stream(label_stream):
         category = None
-        # dimensions = None
         speaker = None
 
         for row in label_file:
             split = row.split("\t")
-            category = get_emotion_from_label(split[2])
-            # dimensions = cont2list(split[3])
-            # dimensions_dis = cont2list(split[3], binned = True)
-            speaker = get_speaker_from_filename(filename)
+            if len(split) >= 3:
+                category = get_emotion_from_label(split[2])
+                speaker = get_speaker_from_filename(filename)
+
+        return category, speaker
+
+    # Determine the encoding
+    def try_encoding(file_path, encoding):
+        stream = open(label_path, 'r', encoding=encoding)
+        stream.readlines()
+        stream.seek(0)
+        return encoding
+
+    try:
+        encoding = try_encoding(label_path, 'utf-16')
+    except (UnicodeDecodeError, UnicodeError):
+        encoding = try_encoding(label_path, 'unicode-escape')
+
+    with open(label_path, 'r', encoding=encoding) as label_file:
+        category, speaker = read_stream(label_file)
 
     audio = audio_utils.load_wav(wav_path)
     audio = np.array(audio, dtype = np.float32)
@@ -120,7 +135,7 @@ def get_samples_and_labels(filename, config):
     wav_path = config['data']['sample_set_dir'] + "/" + filename
     label_path = config['data']['dataset_dir'] + "/Annotations/" + speaker + ".txt"
 
-    with open(label_path, 'r') as label_file:
+    with open(label_path, 'r', encoding='utf-16') as label_file:
 
         category = None
         # dimensions = None
