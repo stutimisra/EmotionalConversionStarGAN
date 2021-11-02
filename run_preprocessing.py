@@ -12,7 +12,7 @@ import numpy as np
 import pickle
 from shutil import copyfile
 import argparse
-from utils.data_preprocessing_utils import get_wav_and_labels
+from utils.data_preprocessing_utils import get_wav_and_labels, read_annotations
 from utils.preprocess_world import world_features, cal_mcep, get_f0_stats
 
 
@@ -69,7 +69,7 @@ def copy_files(source_dir, output_dir):
         print("Speaker", speaker, "completed.")
 
 
-def generate_world_features(filenames, data_dir):
+def generate_world_features(filenames, data_dir, annotations_dict):
     """Code for creating and saving world features and sample labels"""
 
     world_dir = os.path.join(data_dir, 'world')
@@ -89,7 +89,7 @@ def generate_world_features(filenames, data_dir):
 
     for i, f in enumerate(filenames):
 
-        wav, labels = get_wav_and_labels(f, data_dir)
+        wav, labels = get_wav_and_labels(f, data_dir, annotations_dict)
         wav = np.array(wav, dtype=np.float64)
         labels = np.array(labels)
 
@@ -118,7 +118,7 @@ def generate_world_features(filenames, data_dir):
             print(worlds_made, "worlds made.")
 
 
-def generate_f0_stats(filenames, data_dir):
+def generate_f0_stats(filenames, data_dir, annotations_dict):
     """Generate absolute and relative f0 dictionary"""
 
     NUM_SPEAKERS = 10
@@ -133,7 +133,7 @@ def generate_f0_stats(filenames, data_dir):
         for s in range(NUM_SPEAKERS):
             f0s = []
             for f in filenames:
-                wav, labels = get_wav_and_labels(f, data_dir)
+                wav, labels = get_wav_and_labels(f, data_dir, annotations_dict)
                 wav = np.array(wav, dtype=np.float64)
                 labels = np.array(labels)
                 if labels[0] == e and labels[1] == s:
@@ -200,11 +200,13 @@ def run_preprocessing(args):
 
     audio_filenames = [f for f in os.listdir(audio_dir) if '.wav' in f]
 
+    annotations_dict = read_annotations(os.path.join(data_dir, 'annotations'))
+
     print("----------------- Producing WORLD features data -----------------")
-    generate_world_features(audio_filenames, data_dir)
+    generate_world_features(audio_filenames, data_dir, annotations_dict)
 
     print("--------------- Producing relative f0 dictionaries ---------------")
-    generate_f0_stats(audio_filenames, data_dir)
+    generate_f0_stats(audio_filenames, data_dir, annotations_dict)
 
 
 if __name__ == '__main__':
