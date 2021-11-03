@@ -235,7 +235,7 @@ if __name__=='__main__':
     ########################################
     for file_num, f in enumerate(filenames):
 
-        wav, labels = pp.get_wav_and_labels(f, config['data']['dataset_dir'])
+        wav, labels = pp.get_wav_and_labels(f, config['data']['dataset_dir'], annotations_dict)
         wav = np.array(wav, dtype = np.float64)
         labels = np.array(labels)
         f0_real, ap_real, sp, coded_sp = pw.cal_mcep(wav)
