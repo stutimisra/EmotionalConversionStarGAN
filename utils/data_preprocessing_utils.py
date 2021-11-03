@@ -31,6 +31,9 @@ def get_emotion_from_label(category):
 
     conversion = {'Neutral': 0, 'Happy': 1, 'Sad': 2, 'Angry': 3}
 
+    if category not in conversion:
+        return -1
+
     label = conversion[category]
 
     return label

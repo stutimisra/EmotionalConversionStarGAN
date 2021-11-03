@@ -122,6 +122,7 @@ def generate_world_features(filenames, data_dir, annotations_dict):
 def generate_f0_stats(filenames, data_dir, annotations_dict):
     """Generate absolute and relative f0 dictionary"""
 
+    FIRST_SPEAKER = 11
     NUM_SPEAKERS = 10
     NUM_EMOTIONS = 4
     f0_dir = os.path.join(data_dir, 'f0')
@@ -131,7 +132,7 @@ def generate_f0_stats(filenames, data_dir, annotations_dict):
     emo_stats = {}
     for e in range(NUM_EMOTIONS):
         spk_dict = {}
-        for s in range(NUM_SPEAKERS):
+        for s in range(FIRST_SPEAKER, NUM_SPEAKERS + FIRST_SPEAKER):
             f0s = []
             for f in filenames:
                 wav, labels = get_wav_and_labels(f, data_dir, annotations_dict)
@@ -171,7 +172,7 @@ def generate_f0_stats(filenames, data_dir, annotations_dict):
             mean_list = []
             std_list = []
 
-            for s in range(NUM_SPEAKERS):
+            for s in range(FIRST_SPEAKER, NUM_SPEAKERS + FIRST_SPEAKER):
                 mean_diff = emo_stats[e2][s][0] - emo_stats[e1][s][0]
                 std_diff = emo_stats[e2][s][1] - emo_stats[e1][s][1]
                 mean_list.append(mean_diff)
@@ -204,7 +205,7 @@ def run_preprocessing(args):
     annotations_dict = read_annotations(os.path.join(data_dir, 'annotations'))
 
     print("----------------- Producing WORLD features data -----------------")
-    generate_world_features(audio_filenames, data_dir, annotations_dict)
+    # generate_world_features(audio_filenames, data_dir, annotations_dict)
 
     print("--------------- Producing relative f0 dictionaries ---------------")
     generate_f0_stats(audio_filenames, data_dir, annotations_dict)
