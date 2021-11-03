@@ -185,18 +185,23 @@ if __name__=='__main__':
 
         print("Data directory = ", data_dir)
         files = find_files(data_dir, ext='.wav')
+        print("Files", files)
 
         label_dir = os.path.join(config['data']['dataset_dir'], 'labels')
         num_emos = config['model']['num_classes']
+        print("Num emotions", num_emos)
 
         # filenames = [f + ".wav" for f in files]
+        """
         filenames = [f for f in files if
                      -1 < pp.get_wav_and_labels(f, config['data']['dataset_dir'])[1][0] < num_emos]
         filenames = [os.path.join(config['data']['dataset_dir'], f) for f in filenames][:10]
+        """
 
         files = my_dataset.shuffle(files)
 
         train_test_split = config['data']['train_test_split']
+        print("Train test split", train_test_split)
         split_index = int(len(files) * train_test_split)
         filenames = files[split_index:]
 
