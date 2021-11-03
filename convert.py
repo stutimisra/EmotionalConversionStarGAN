@@ -170,6 +170,9 @@ if __name__=='__main__':
     emo_targets = F.one_hot(emo_labels, num_classes = num_emos).float().to(device = device)
     print(f"Number of emotions = {num_emos}")
 
+    data_dir = config['data']['dataset_dir']
+    annotations_dict = pp.read_annotations(os.path.join(data_dir, 'annotations'))
+
     if args.in_dir is not None:
         files = find_files(args.in_dir, ext='wav')
 
