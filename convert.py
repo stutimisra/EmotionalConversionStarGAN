@@ -112,31 +112,6 @@ def _single_conversion(filename, model, one_hot_emo):
     # plt.title(r'New histogram of sequence lengths for 4 emotional categories')
     # plt.show()
 
-def mel_cepstral_dist(x, y):
-    """
-    Args:
-        - x, y: (seq_len, n_coefficients)
-    """
-    # Make the two spectrograms equal
-    seq_len = min(x.shape[0], y.shape[0])
-    x = x[0:seq_len]
-    y = y[0:seq_len]
-
-    def sqCepDist(x, y):
-        diff = x - y
-        return np.inner(diff, diff)
-
-    def eucCepDist(x, y):
-        diff = x - y
-        return math.sqrt(np.inner(diff, diff))
-
-    logSpecDbConst = 10.0 / math.log(10.0) * math.sqrt(2.0)
-    def logSpecDbDist(x, y):
-        diff = x - y
-        return logSpecDbConst * math.sqrt(np.inner(diff, diff))
-
-    return np.mean(logSpecDbDist(x, y))
-
 if __name__=='__main__':
 
     # Parse args:
@@ -296,10 +271,6 @@ if __name__=='__main__':
                 # f = fake.data()
                 converted_sp = fake.cpu().numpy()
                 converted_sp = np.array(converted_sp, dtype = np.float64)
-
-                # If converting audio to itself
-                if labels[0] == i:
-                    print("Mel-cepstral distortion", mel_cepstral_dist(converted_sp, coded_sp_cpu))
 
                 sample_length = converted_sp.shape[0]
                 if sample_length != ap.shape[0]:
