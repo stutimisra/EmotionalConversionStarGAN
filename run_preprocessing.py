@@ -93,9 +93,10 @@ def generate_world_features(filenames, data_dir, annotations_dict):
         wav = np.array(wav, dtype=np.float64)
         labels = np.array(labels)
 
-        coded_sp_name = os.path.join(world_dir, f + ".npy")
-        label_name = os.path.join(labels_dir, f + ".npy")
-        f0_name = os.path.join(f0_dir, f + ".npy")
+        filefront = f.split(".")[0]
+        coded_sp_name = os.path.join(world_dir, filefront + ".npy")
+        label_name = os.path.join(labels_dir, filefront + ".npy")
+        f0_name = os.path.join(f0_dir, filefront + ".npy")
         if os.path.exists(coded_sp_name) and os.path.exists(label_name) and os.path.exists(f0_name):
             worlds_made += 1
             continue
@@ -107,9 +108,9 @@ def generate_world_features(filenames, data_dir, annotations_dict):
             # Ignores data sample sample is too long
             if coded_sp.shape[1] < MAX_LENGTH:
 
-                np.save(os.path.join(world_dir, f[:-4] + ".npy"), coded_sp)
-                np.save(os.path.join(labels_dir, f[:-4] + ".npy"), labels)
-                np.save(os.path.join(f0_dir, f[:-4] + ".npy"), f0)
+                np.save(os.path.join(world_dir, filefront + ".npy"), coded_sp)
+                np.save(os.path.join(labels_dir, filefront + ".npy"), labels)
+                np.save(os.path.join(f0_dir, filefront + ".npy"), f0)
 
                 worlds_made += 1
 

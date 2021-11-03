@@ -85,7 +85,10 @@ def get_wav_and_labels(filename, data_dir, annotations_dict):
     audio = audio_utils.load_wav(wav_path)
     audio = np.array(audio, dtype=np.float32)
     filefront = filename.split(".")[0]
-    labels = annotations_dict[filefront]
+    if filefront in annotations_dict:
+        labels = annotations_dict[filefront]
+    else:
+        labels = np.array([-1, 0])
 
     return audio, labels
 

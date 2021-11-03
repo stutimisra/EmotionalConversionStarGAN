@@ -255,7 +255,7 @@ if __name__=='__main__':
     input_size = 36
     num_layers = 2
 
-    config = yaml.load(open('./config.yaml', 'r'))
+    config = yaml.safe_load(open('./config.yaml', 'r'))
 
     # MAKE TRAIN + TEST SPLIT
     mel_dir = os.path.join(config['data']['dataset_dir'], "world")
