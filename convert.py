@@ -267,8 +267,8 @@ if __name__=='__main__':
         f0_real, ap_real, sp, coded_sp = pw.cal_mcep(wav)
         # coded_sp_temp = np.copy(coded_sp).T
         # print(coded_sp_temp.shape)
-        coded_sp = coded_sp.T
-        coded_sp = torch.Tensor(coded_sp).unsqueeze(0).unsqueeze(0).to(device = device)
+        coded_sp_cpu = coded_sp.T
+        coded_sp = torch.Tensor(coded_sp_cpu).unsqueeze(0).unsqueeze(0).to(device = device)
 
         with torch.no_grad():
             # print(emo_targets)
@@ -299,7 +299,7 @@ if __name__=='__main__':
 
                 # If converting audio to itself
                 if labels[0] == i:
-                    print("Mel-cepstral distortion", mel_cepstral_dist(converted_sp, coded_sp))
+                    print("Mel-cepstral distortion", mel_cepstral_dist(converted_sp, coded_sp_cpu))
 
                 sample_length = converted_sp.shape[0]
                 if sample_length != ap.shape[0]:
