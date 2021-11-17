@@ -1,8 +1,9 @@
 """
 Author - Max Elliott
+Modifier - Eric Zhou ericzhou@andrew.cmu.edu
 
 Script completes three task:
-    1) refile the IEMOCAP dataset
+    1) refile the ESD dataset
     2) Generates the WORLD features needed for training EmotionalConversionStarGAN
     3) Generates f0 look up dictionaries needs for producing converted audio files
 """
@@ -122,8 +123,8 @@ def generate_world_features(filenames, data_dir, annotations_dict):
 def generate_f0_stats(filenames, data_dir, annotations_dict):
     """Generate absolute and relative f0 dictionary"""
 
-    FIRST_SPEAKER = 11
-    NUM_SPEAKERS = 10
+    FIRST_SPEAKER = 0
+    NUM_SPEAKERS = 20
     NUM_EMOTIONS = 4
     f0_dir = os.path.join(data_dir, 'f0')
 
