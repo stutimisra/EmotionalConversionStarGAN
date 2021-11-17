@@ -206,7 +206,7 @@ def run_preprocessing(args):
     annotations_dict = read_annotations(os.path.join(data_dir, 'annotations'))
 
     print("----------------- Producing WORLD features data -----------------")
-    # generate_world_features(audio_filenames, data_dir, annotations_dict)
+    generate_world_features(audio_filenames, data_dir, annotations_dict)
 
     print("--------------- Producing relative f0 dictionaries ---------------")
     generate_f0_stats(audio_filenames, data_dir, annotations_dict)
