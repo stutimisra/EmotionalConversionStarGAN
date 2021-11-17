@@ -1,13 +1,9 @@
 # EmotionalConversionStarGAN
 This repository contains code to replicate results from the ICASSP 2020 paper "StarGAN for Emotional Speech Conversion: Validated by Data Augmentation of End-to-End Emotion Recognition".
 
-- stargan: code for training the Emotional StarGAN and performing emotional generation (originally here - https://github.com/max-elliott/StarGAN-Emotional-VC).
+The original paper used the IEMOCAP dataset: https://sail.usc.edu/iemocap/
 
-- aug_evaluation: code for performing the data augmentation experiments (coming soon)
-
-- samples: some samples selectively (coming soon - checking with IEMOCAP if we can publicly share according to GDPR)
-
-The IEMOCAP database requires the signing of an EULA; please communicate with the handlers: https://sail.usc.edu/iemocap/
+We are using the Emotional Speech Dataset (ESD) instead, since it is newer and more comparable to recent baselines. https://kunzhou9646.github.io/controllable-evc/
 
 # Preparing
 **- Requirements:**
@@ -17,20 +13,22 @@ The IEMOCAP database requires the signing of an EULA; please communicate with th
 * argparse
 * librosa
 * scikit-learn
-* tensorflow < 2.0
+* tensorflow < 2.0 (just for logging, but in this repo we deleted this functionality to simplify package conflicts)
 * pyworld
 * matplotlib
 * yaml
+
+If you are running on AWS, you will have to `conda activate pytorch_p37` and `pip install librosa pyworld`.
 
 **- Clone repository:**
 ```
 git clone https://github.com/glam-imperial/EmotionalConversionStarGAN.git
 cd EmotionalConversionStarGAN
 ```
-**- Download IEMOCAP dataset from https://sail.usc.edu/iemocap/**
 
-# IEMOCAP Preprocessing
-Running the script **run_preprocessing.py** will prepare the IEMOCAP as needed for training the model. It assumes that IEMOCAP is already downloaded and is stored in an arbitrary directory <DIR> with this file structure
+**- Download ESD dataset from https://kunzhou9646.github.io/controllable-evc/**
+
+Running the script **run_preprocessing.py** will prepare the data as needed for training the model. It assumes that ESD is already downloaded and is stored in an arbitrary directory <DIR> with this file structure
 ```
 <DIR>
   |- Session1  
@@ -61,6 +59,9 @@ After running you should have a file structure:
  |- labels
  |- world
  ```
+ 
+`run_preprocessing.py` will take a few hours. We recommend saving `processed_data` somewhere. If you are in a rush and trying to test whether the model will work, you can interrupt the script after it has converted only a subset of the data.
+ 
  # Training EmotionStarGAN
  Main training script is **train_main.py**. However to automatically train a three emotion model (angry, sad, happy) as it was trained for "StarGAN for Emotional Speech Conversion: Validated by Data Augmentation of End-to-End Emotion Recognition", simply call:
  ```
@@ -74,7 +75,7 @@ After running you should have a file structure:
  A full training run will take ~24 hours on a decent GPU. The auxiliary emotional classifier can also be trained independently using **classifier_train.py**.
  
  # Sample Conversion
- Once a model is trained you can convert IEMOCAP audio samples using **convert.py**. Running
+ Once a model is trained you can convert the output audio samples using **convert.py**. Running
  ```
  python convert.py --checkpoint <path/to/model_checkpoint.ckpt> -o ./processed_data/converted
  ```
@@ -83,4 +84,3 @@ After running you should have a file structure:
  ```
  python convert.py --checkpoint <path/to/model_checkpoint.ckpt> -i <path/to/wavs> -o ./processed_data/converted
  ```
- They currently must be existing files in the IEMOCAP dataset. Code will be updated to convert arbitrary samples later.
