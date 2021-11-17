@@ -31,19 +31,23 @@ cd EmotionalConversionStarGAN
 Running the script **run_preprocessing.py** will prepare the data as needed for training the model. It assumes that ESD is already downloaded and is stored in an arbitrary directory <DIR> with this file structure
 ```
 <DIR>
-  |- Session1  
-  |     |- Annotations  
-  |     |- Ses01F_impro01  
-  |     |- Ses01F_impro02  
-  |     |- ...  
+  |- Speaker 0001  
+  |     |- Annotations (0001.txt) 
+  |     |- Angry/
+  |     |-    |- evaluation
+  |     |-    |-    |- 0001_<recording id>.wav
+  |     |-    |- test
+  |     |-    |- train
+  |     |- Happy/
+  |     |- ...
   |- ...
-  |- Session5
-        |- Annotations
-        |- Ses05F_impro01
-        |- Ses05F_impro02
-        |- ...
+  |- Speaker 0020
+  |     |- Annotations (0020.txt) 
+  |     |- Angry/
+  |     |- Happy/
+  |     |- ...
 ```
-where Annotations is a directory holding the label .txt files for all Session<x> (Ses01F_impro01.txt etc.), and each other directory (Ses01F_impro01, Ses01F_impro02 etc.) holds the .wav files for each scene in the session.
+where Annotations is a text file holding the emotion labels for each recording
   
  To preprocess run
  ```
