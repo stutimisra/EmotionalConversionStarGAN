@@ -29,7 +29,7 @@ def get_emotion_from_label(category):
     if category == 'Surprise' or category == '':
         return -1
 
-    conversion = {'Neutral': 0, 'Happy': 1, 'Sad': 2, 'Angry': 3}
+    conversion = {'Neutral': 0, 'Happy': 1, 'Sad': 2, 'Angry': 3, '中立': 0, '快乐': 1, '伤心': 2, '生气': 3}
 
     if category not in conversion:
         return -1
@@ -153,7 +153,10 @@ def read_annotations(dir):
             try:
                 encoding = try_encoding(file_path, 'utf-16')
             except (UnicodeDecodeError, UnicodeError):
-                encoding = try_encoding(file_path, 'unicode-escape')
+                try:
+                    encoding = try_encoding(file_path, 'gb2312')
+                except (UnicodeDecodeError, UnicodeError):
+                    encoding = try_encoding(file_path, 'unicode-escape')
 
             with open(file_path, 'r', encoding=encoding) as label_file:
                 for row in label_file:

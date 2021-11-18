@@ -114,6 +114,10 @@ def generate_world_features(filenames, data_dir, annotations_dict):
                 np.save(os.path.join(f0_dir, filefront + ".npy"), f0)
 
                 worlds_made += 1
+            else:
+                print(f"Recording {filefront} too long, length {coded_sp.shape[1]}")
+        # else:
+        #     print(f"Recording {filefront} has invalid emotion {labels[0]}")
 
         if i % 10 == 0:
             print(i, " complete.")
@@ -123,13 +127,12 @@ def generate_world_features(filenames, data_dir, annotations_dict):
 def generate_f0_stats(filenames, data_dir, annotations_dict):
     """Generate absolute and relative f0 dictionary"""
 
-    FIRST_SPEAKER = 0
+    FIRST_SPEAKER = 1
     NUM_SPEAKERS = 20
     NUM_EMOTIONS = 4
     f0_dir = os.path.join(data_dir, 'f0')
 
     # CALCULATE ABSOLUTE F0 STATS
-
     emo_stats = {}
     for e in range(NUM_EMOTIONS):
         spk_dict = {}
