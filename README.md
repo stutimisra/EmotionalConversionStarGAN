@@ -13,12 +13,12 @@ We are using the Emotional Speech Dataset (ESD) instead, since it is newer and m
 * argparse
 * librosa
 * scikit-learn
-* tensorflow < 2.0 (just for logging, but in this repo we deleted this functionality to simplify package conflicts)
+* tensorflow < 2.0 (just for logging)
 * pyworld
 * matplotlib
 * yaml
 
-If you are running on AWS, you will have to `conda activate pytorch_p37` and `pip install librosa pyworld`.
+If you are running on AWS, you will have to `conda activate pytorch_p37` and `pip install librosa pyworld tensorflow==1.15`.
 
 **- Clone repository:**
 ```
