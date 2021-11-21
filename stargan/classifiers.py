@@ -74,7 +74,7 @@ class Emotion_Classifier(nn.Module):
         x_data = x_data.contiguous().view(batch_size, -1, self.num_outchannels*(no_features//8))
         # Now x = (B, max_l//8, channels*(n_mels//8))
 
-        x_data = nn.utils.rnn.pack_padded_sequence(x_data, x_lens,
+        x_data = nn.utils.rnn.pack_padded_sequence(x_data, x_lens.cpu(),
                                                    batch_first=True,
                                                    enforce_sorted=True)
 
@@ -167,7 +167,7 @@ class Dimension_Classifier(nn.Module):
         x_data = x_data.contiguous().view(batch_size, -1, self.num_outchannels*no_features//8)
         # Now x = (B, max_l//4, channels*n_mels//4)
 
-        x_data = nn.utils.rnn.pack_padded_sequence(x_data, x_lens,
+        x_data = nn.utils.rnn.pack_padded_sequence(x_data, x_lens.cpu(),
                                                    batch_first=True,
                                                    enforce_sorted=True)
 

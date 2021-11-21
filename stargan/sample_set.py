@@ -62,7 +62,7 @@ class Sample_Set():
 
 if __name__ == '__main__':
 
-    config = yaml.load(open('./config.yaml', 'r'))
+    config = yaml.safe_load(open('./config.yaml', 'r'))
 
     s = Sample_Set(config)
 

@@ -71,7 +71,7 @@ if __name__ == '__main__':
     parser.add_argument("-a", "--alter", action='store_true')
 
     args = parser.parse_args()
-    config = yaml.load(open(args.config, 'r'))
+    config = yaml.safe_load(open(args.config, 'r'))
 
     if args.name is not None:
         config['model']['name'] = args.name

@@ -406,7 +406,7 @@ class Discriminator(nn.Module):
 if __name__ == '__main__':
     pass
     # import yaml
-    # config = yaml.load(open('./config.yaml', 'r'))
+    # config = yaml.safe_load(open('./config.yaml', 'r'))
     #
     # l = [0,0,0,1,2,3,4,5]
     #

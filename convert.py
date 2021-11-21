@@ -129,7 +129,7 @@ if __name__=='__main__':
                         # help = "mel or world features.")
 
     args = parser.parse_args()
-    config = yaml.load(open('./config.yaml', 'r'))
+    config = yaml.safe_load(open('./config.yaml', 'r'))
 
     # checkpoint_dir = '../checkpoints/' + args.model + '/' + args.iteration + '.ckpt'
     checkpoint_dir = args.checkpoint
@@ -157,7 +157,7 @@ if __name__=='__main__':
 
     # Load model
     model = model.StarGAN_emo_VC1(config, config['model']['name'])
-    model.load(checkpoint_dir, map_location= map_location)
+    model.load(checkpoint_dir)
     config = model.config
     model.to_device(device = device)
     model.set_eval_mode()

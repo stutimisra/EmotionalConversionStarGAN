@@ -27,7 +27,6 @@ def get_speaker_from_filename(filename):
 
 
 def get_emotion_from_label(category):
-
     if category == 'xxx' or category == 'dis' or category == 'fea' or category == 'oth':
         return -1
     if category == 'exc' or category == 'fru' or category == 'sur':

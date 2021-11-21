@@ -81,6 +81,8 @@ def generate_world_features(filenames, data_dir):
     MIN_LENGTH = 0 # actual is 59
     MAX_LENGTH = 1719
     worlds_made = 0
+    wrong_emotion_count = 0
+    long_recording_count = 0
 
     for i, f in enumerate(filenames):
 
@@ -91,6 +93,7 @@ def generate_world_features(filenames, data_dir):
         coded_sp_name = os.path.join(world_dir, f[:-4] + ".npy")
         label_name = os.path.join(labels_dir, f[:-4] + ".npy")
         f0_name = os.path.join(f0_dir, f[:-4] + ".npy")
+
         if os.path.exists(coded_sp_name) and os.path.exists(label_name) and os.path.exists(f0_name):
             worlds_made += 1
             continue
@@ -107,10 +110,16 @@ def generate_world_features(filenames, data_dir):
                 np.save(os.path.join(f0_dir, f[:-4] + ".npy"), f0)
 
                 worlds_made += 1
+            else:
+                long_recording_count += 1
+        else:
+            wrong_emotion_count += 1
 
         if i % 10 == 0:
             print(i, " complete.")
             print(worlds_made, "worlds made.")
+            print(wrong_emotion_count, "recordings skipped for wrong emotion")
+            print(long_recording_count, "long recordings skipped")
 
 
 def generate_f0_stats(filenames, data_dir):
