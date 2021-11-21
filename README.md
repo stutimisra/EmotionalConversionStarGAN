@@ -22,6 +22,8 @@ The IEMOCAP database requires the signing of an EULA; please communicate with th
 * matplotlib
 * yaml
 
+If running on AWS, activate the `pytorch_p37` environment, and `pip install librosa pyworld tensorflow==1.15`
+
 **- Clone repository:**
 ```
 git clone https://github.com/glam-imperial/EmotionalConversionStarGAN.git
@@ -71,7 +73,9 @@ After running you should have a file structure:
  2. Runs main training for 200k iterations in --recon_only mode, meaning model learns to simply reconstruct the input audio.
  3. Trains model for a further 100k steps, introducing the pre-trained classifier.
  
- A full training run will take ~24 hours on a decent GPU. The auxiliary emotional classifier can also be trained independently using **classifier_train.py**.
+ A full training run will take ~24 hours on g4dn.xlarge. The auxiliary emotional classifier can also be trained independently using **classifier_train.py**.
+  
+ You may monitor the training by running `tensorboard --logdir logs`. This will set up a server displaying training metrics in real time.
  
  # Sample Conversion
  Once a model is trained you can convert IEMOCAP audio samples using **convert.py**. Running
@@ -84,3 +88,4 @@ After running you should have a file structure:
  python convert.py --checkpoint <path/to/model_checkpoint.ckpt> -i <path/to/wavs> -o ./processed_data/converted
  ```
  They currently must be existing files in the IEMOCAP dataset. Code will be updated to convert arbitrary samples later.
+ 
