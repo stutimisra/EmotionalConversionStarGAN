@@ -2,7 +2,7 @@ model:
 
       name: "model_step1"
       num_feats: 36
-      batch_size: 16
+      batch_size: 4
       use_speaker: False
       use_dimension: False
       num_classes: 4
