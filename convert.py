@@ -230,6 +230,10 @@ if __name__=='__main__':
         wav, labels = pp.get_wav_and_labels(f, config['data']['dataset_dir'])
         wav = np.array(wav, dtype = np.float64)
         labels = np.array(labels)
+
+        if labels[0] == -1 or labels[0] >= emo_targets.size(0):
+            continue
+
         f0_real, ap_real, sp, coded_sp = pw.cal_mcep(wav)
         # coded_sp_temp = np.copy(coded_sp).T
         # print(coded_sp_temp.shape)

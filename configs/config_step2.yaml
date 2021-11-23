@@ -2,10 +2,10 @@ model:
 
       name: "model_step2"
       num_feats: 36
-      batch_size: 16
+      batch_size: 32
       use_speaker: False
       use_dimension: False
-      num_classes: 4
+      num_classes: 3
 
 loss:
 
@@ -18,7 +18,7 @@ loss:
 
     num_iters: 300000
     num_iters_decay: 100000
-    resume_iters: 200000
+    resume_iters: 260000
 
     train_classifier: False
     c_to_g_ratio: 5
