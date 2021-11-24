@@ -195,7 +195,7 @@ if __name__=='__main__':
         try:
             wav, labels = pp.get_wav_and_labels(f, config['data']['dataset_dir'], annotations_dict)
         except Exception as e:
-            print("Warning:", e)
+            print("Warning:", e, "file", f)
             continue
 
         wav = np.array(wav, dtype = np.float64)
