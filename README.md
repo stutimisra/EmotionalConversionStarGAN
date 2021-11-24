@@ -82,10 +82,5 @@ After running you should have a file structure:
  ```
  python convert.py --checkpoint <path/to/model_checkpoint.ckpt> -o ./processed_data/converted
  ```
- will load a model checkpoint and convert 10 random samples from the test set into each emotion and save the converted samples in /processed_data/converted (currently bugged: run conversion as stated below).
- Specifying an input directory will convert all the audio files in that directory:
- ```
- python convert.py --checkpoint <path/to/model_checkpoint.ckpt> -i <path/to/wavs> -o ./processed_data/converted
- ```
- They currently must be existing files in the IEMOCAP dataset. Code will be updated to convert arbitrary samples later.
+ will load a model checkpoint and convert all samples in the train and test set and store the converted files in /processed_data/converted.
  
