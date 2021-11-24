@@ -23,6 +23,7 @@ import yaml
 import numpy as np
 import random
 import os
+import shutil
 import pickle
 
 import librosa
@@ -39,6 +40,7 @@ from stargan.my_dataset import get_filenames
 from utils import audio_utils
 import utils.data_preprocessing_utils as pp
 import utils.preprocess_world as pw
+from run_preprocessing import MAX_LENGTH
 
 
 def _single_conversion(filename, model, one_hot_emo):
@@ -163,80 +165,41 @@ if __name__=='__main__':
     model.set_eval_mode()
 
     # Make emotion targets (using config file)
-    # s = solver.Solver(None, None, config, load_dir = None)
-    # targets =
     num_emos = config['model']['num_classes']
     emo_labels = torch.Tensor(range(0, num_emos)).long()
     emo_targets = F.one_hot(emo_labels, num_classes = num_emos).float().to(device = device)
     print(f"Number of emotions = {num_emos}")
 
     if args.in_dir is not None:
-        files = find_files(args.in_dir, ext='wav')
-
-        filenames = []
-        for f in files:
-            f = os.path.basename(f)[:-4] + ".wav"
-            filenames.append(f)
-
-        print("Converting sample set.")
+        # Get all .wav files in directory in_dir
+        data_dir = args.in_dir
+        print("Converting all samples in", args.in_dir)
     else:
-
-        data_dir = os.path.join(config['data']['dataset_dir'], "audio")
-
-        print("Data directory = ", data_dir)
-        files = find_files(data_dir, ext='.wav')
-
-        label_dir = os.path.join(config['data']['dataset_dir'], 'labels')
-        num_emos = config['model']['num_classes']
-
-        # filenames = [f + ".wav" for f in files]
-        filenames = [f for f in files if
-                     -1 < pp.get_wav_and_labels(f, config['data']['dataset_dir'])[1][0] < num_emos]
-        filenames = [os.path.join(config['data']['dataset_dir'], f) for f in filenames][:10]
-
-        files = my_dataset.shuffle(files)
-
-        train_test_split = config['data']['train_test_split']
-        split_index = int(len(files) * train_test_split)
-        filenames = files[split_index:]
-
-        print("Converting 10 random test set samples.")
-        print(filenames)
-    # for one_hot in emo_targets:
-    #     _single_conversion(filenames[0], model, one_hot)
-
-    # filenames = ["Ses01F_impro02_F014.wav"]
-
-    # filenames = ["../data/mii.wav"]
-    # labels = [1,0,0,0,0,0,0,0]
-    # wav = audio_utils.load_wav(filenames[0])
-
-    # in_dir = '../data/labels'
-    # files = find_files(in_dir, ext = 'npy')
-    # filenames = [os.path.basename(f)[:-4] + ".wav" for f in files]
-    # print("Found", len(filenames), " files.")
-    #
-    # filenames = [f for f in filenames if pp.get_wav_and_labels(f, config['data']['dataset_dir'])[1][1] in range(0,6)]
-    # random.shuffle(filenames)
-    # filenames = filenames[:10]
-    # print(filenames)
-    # print("Number of files to be converted = ", len(filenames))
+        # Convert only train and test samples
+        data_dir = os.path.join(config['data']['dataset_dir'], 'audio')
+        print("Converting train and test samples in", data_dir)
 
     ########################################
     #        WORLD CONVERSION LOOP         #
     ########################################
-    for file_num, f in enumerate(filenames):
+    files = find_files(data_dir, ext='wav')
+    for file_num, f in enumerate(files):
+        f = os.path.basename(f)[:-4] + ".wav"
 
         wav, labels = pp.get_wav_and_labels(f, config['data']['dataset_dir'])
-        wav = np.array(wav, dtype = np.float64)
+        wav = np.array(wav, dtype=np.float64)
         labels = np.array(labels)
 
-        if labels[0] == -1 or labels[0] >= emo_targets.size(0):
+        # If wav file is not in original train / test input (and args.in_dir not specified), skip
+        if not args.in_dir and (labels[0] == -1 or labels[0] >= emo_targets.size(0)):
             continue
 
         f0_real, ap_real, sp, coded_sp = pw.cal_mcep(wav)
-        # coded_sp_temp = np.copy(coded_sp).T
-        # print(coded_sp_temp.shape)
+
+        # If in_dir not specified, and length of the recording >= MAX_LENGTH, skip
+        if not args.in_dir and coded_sp.shape[1] >= MAX_LENGTH:
+            continue
+
         coded_sp = coded_sp.T
         coded_sp = torch.Tensor(coded_sp).unsqueeze(0).unsqueeze(0).to(device = device)
 
@@ -244,7 +207,6 @@ if __name__=='__main__':
             # print(emo_targets)
             for i in range (0, emo_targets.size(0)):
                 # print("Doing one.")
-
 
                 f0 = np.copy(f0_real)
                 ap = np.copy(ap_real)
@@ -282,6 +244,12 @@ if __name__=='__main__':
                 # print("f0 shape = ", f0.shape)
                 # print(converted_sp.shape)
                 audio_utils.save_world_wav([f0,ap,sp,converted_sp], filename_wav)
+
+                # Copy original file to output directory for ease
+                src_filepath = os.path.join(data_dir, f[0:-4] + ".wav")
+                dest_filename = model_iteration_string + '_' + f[0:-4] + "_" + str(int(labels[0].item())) + ".wav"
+                dest_filepath = os.path.join(args.out_dir, dest_filename)
+                shutil.copy(src_filepath, dest_filepath)
         # print(f, " converted.")
         if (file_num+1) % 20 == 0:
             print(file_num+1, " done.")
