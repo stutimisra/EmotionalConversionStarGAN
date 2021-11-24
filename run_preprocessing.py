@@ -16,6 +16,8 @@ import argparse
 from utils.data_preprocessing_utils import get_wav_and_labels, read_annotations
 from utils.preprocess_world import world_features, cal_mcep, get_f0_stats
 
+MIN_LENGTH = 0 # actual is 59
+MAX_LENGTH = 1719
 
 def copy_files(source_dir, output_dir):
 
@@ -84,8 +86,6 @@ def generate_world_features(filenames, data_dir, annotations_dict):
     if not os.path.exists(labels_dir):
         os.mkdir(labels_dir)
 
-    MIN_LENGTH = 0 # actual is 59
-    MAX_LENGTH = 1719
     worlds_made = 0
 
     for i, f in enumerate(filenames):
