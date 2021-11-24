@@ -192,7 +192,12 @@ if __name__=='__main__':
     for file_num, f in enumerate(files):
         f = os.path.basename(f)[:-4] + ".wav"
 
-        wav, labels = pp.get_wav_and_labels(f, config['data']['dataset_dir'], annotations_dict)
+        try:
+            wav, labels = pp.get_wav_and_labels(f, config['data']['dataset_dir'], annotations_dict)
+        except Exception as e:
+            print("Warning:", e)
+            continue
+
         wav = np.array(wav, dtype = np.float64)
         labels = np.array(labels)
 
