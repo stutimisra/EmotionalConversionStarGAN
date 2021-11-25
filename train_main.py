@@ -115,7 +115,6 @@ if __name__ == '__main__':
     train_files, test_files = my_dataset.get_train_test_split(data_dir, config)
 
     print("Train test split")
-    print(train_files[:10], test_files[:10])
 
     # @eric-zhizu: Not sure why original code makes weight vectors using both train and test files
     weight_vector = make_weight_vector(train_files + test_files, config['data']['dataset_dir'])
