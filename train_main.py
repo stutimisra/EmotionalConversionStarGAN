@@ -29,7 +29,6 @@ import stargan.my_dataset as my_dataset
 from stargan.my_dataset import get_filenames
 import stargan.solver as solver
 
-
 def make_weight_vector(filenames, data_dir):
 
     label_dir = os.path.join(data_dir, 'labels')
@@ -78,9 +77,9 @@ if __name__ == '__main__':
         print(config['model']['name'])
 
     # fix seeds to get consistent results
-    SEED = 42
     # torch.backend.cudnn.deterministic = True
     # torch.backend.cudnn.benchmark = False
+    SEED = 42
     torch.manual_seed(SEED)
     np.random.seed(SEED)
     random.seed(SEED)
@@ -113,24 +112,13 @@ if __name__ == '__main__':
     print("Data directory = ", data_dir)
 
     # MAKE TRAIN + TEST SPLIT
-    files = get_filenames(data_dir)
+    train_files, test_files = my_dataset.get_train_test_split(data_dir, config)
 
-    label_dir = os.path.join(config['data']['dataset_dir'], 'labels')
-    num_emos = config['model']['num_classes']
+    print("Train test split")
+    print(train_files[:10], test_files[:10])
 
-    files = [f for f in files if np.load(label_dir + "/" + f + ".npy")[0] < num_emos]
-
-    print(len(files), " files used.")
-    weight_vector = make_weight_vector(files, config['data']['dataset_dir'])
-
-    files = my_dataset.shuffle(files)
-
-    train_test_split = config['data']['train_test_split']
-    split_index = int(len(files)*train_test_split)
-    train_files = files[:split_index]
-    test_files = files[split_index:]
-
-    # print(test_files)
+    # @eric-zhizu: Not sure why original code makes weight vectors using both train and test files
+    weight_vector = make_weight_vector(train_files + test_files, config['data']['dataset_dir'])
 
     print(f"Training samples: {len(train_files)}")
     print(f"Test samples: {len(test_files)}")
@@ -164,29 +152,3 @@ if __name__ == '__main__':
 
     print("Training model.")
     s.train()
-
-    # for i, (x,y) in train_loader:
-    #
-
-    # # TEST MODEL COMPONENTS
-    # data_iter = iter(train_loader)
-    #
-    # x, y = next(data_iter)
-    #
-    # x_lens = x[1]
-    # x = x[0].unsqueeze(1)
-    # # x = x[:,:,0:80]
-    # # print(x.size(), y.size())
-    #
-    # targets = s.make_random_labels(num_emos, batch_size)
-    # targets_one_hot = F.one_hot(targets, num_classes = num_emos).float()
-    #
-    # print('g_in =', x.size())
-    # # out = s.model.G(input, targets)
-    # g_out = s.model.G(x, targets_one_hot)
-    # print('g_out = ', g_out.size())
-    # d_out = s.model.D(g_out, targets_one_hot)
-    # print('d_out = ', d_out)
-    # # WHY DIFFERNT LENGTH OUTPUT????
-    # out = s.model.emo_cls(g_out, x_lens)
-    # print('c_out = ',out)

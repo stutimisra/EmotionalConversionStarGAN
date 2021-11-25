@@ -15,6 +15,46 @@ import random
 import os
 
 
+def get_train_test_split(data_dir, config):
+    """
+    Even though we shuffle the files before performing the train test split,
+    we have a constant seed. So the shuffle should be deterministic.
+
+    Params:
+        - data_dir : Path to data directory (typically processed_data/world)
+        - config : [Dict] Contains paths to labels directory among other things
+
+    Returns:
+        - train_files : List of filenames in train set
+        - test_files : List of filenames in test set
+    """
+    SEED = 42
+
+    # fix seeds to get consistent results
+    torch.manual_seed(SEED)
+    np.random.seed(SEED)
+    random.seed(SEED)
+
+    files = get_filenames(data_dir)
+
+    label_dir = os.path.join(config['data']['dataset_dir'], 'labels')
+    num_emos = config['model']['num_classes']
+
+    # Filter out the files that have a bad emotion label
+    files = [f for f in files if np.load(label_dir + "/" + f + ".npy")[0] < num_emos]
+
+    print(len(files), " files used.")
+
+    files = shuffle(files)
+
+    train_test_split = config['data']['train_test_split']
+    split_index = int(len(files) * train_test_split)
+    train_files = files[:split_index]
+    test_files = files[split_index:]
+
+    return train_files, test_files
+
+
 def get_filenames(dir):
 
     files = find_files(dir, ext='npy')
