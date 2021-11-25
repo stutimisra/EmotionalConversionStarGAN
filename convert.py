@@ -117,7 +117,18 @@ if __name__=='__main__':
     ########################################
     #        WORLD CONVERSION LOOP         #
     ########################################
-    train_files, test_files = my_dataset.get_train_test_split(data_dir, config)
+    train_npy_files, test_npy_files = my_dataset.get_train_test_split(
+        os.path.join(config['data']['dataset_dir'], 'world'), config
+    )
+
+    def npy_to_wav(filename):
+        """ Convert xxx.npy to xxx.wav.  """
+        filefront = filename.split('.')[0]
+        return filefront + ".wav"
+
+    # Assuming that sample.npy in the world folder exists as sample.wav in the audio folder
+    train_wav_files = [npy_to_wav(f) for f in train_npy_files]
+    test_wav_files = [npy_to_wav(f) for f in test_npy_files]
 
     def convert_files(files, out_folder):
         """
@@ -205,9 +216,8 @@ if __name__=='__main__':
             if (file_num+1) % 20 == 0:
                 print(file_num+1, " done.")
 
-    convert_files(train_files, "train")
-    convert_files(test_files, "test")
-
+    convert_files(train_wav_files, "train")
+    convert_files(test_wav_files, "test")
 
     ########################################
     #         MEL CONVERSION LOOP          #
