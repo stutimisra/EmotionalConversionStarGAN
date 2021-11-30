@@ -151,6 +151,8 @@ class MyDataset(data_utils.Dataset):
 
         mel = torch.FloatTensor(mel).t()
         label = torch.Tensor(label).long()
+        # @eric-zhizu
+        wav = torch.FloatTensor(wav).t()
 
         return mel, wav, label
 
@@ -192,8 +194,6 @@ def collate_length_order(batch):
     wav_forms_padded = torch.nn.utils.rnn.pad_sequence(wav_forms, batch_first=True)
 
     current_len = sequences_padded.size(1)
-    # @eric-zhizu
-    wav_forms_max_len = wav_forms_padded.size(1)
 
     if current_len < 512:
         pad_len = 512 - current_len
@@ -208,11 +208,12 @@ def collate_length_order(batch):
             lengths[i] = 512
     lengths = torch.LongTensor([len(x) for x in sequences])
 
-    # @eric-zhizu
-    wav_form_lengths = torch.LongTensor([len(x) for x in wav_forms])
+    # @eric-zhizu: speechbrain interface requires that lengths be normalized to 1
+    wav_forms_max_len = wav_forms_padded.size(1)
+    wav_form_lengths = torch.LongTensor([len(x) for x in wav_forms]) / wav_forms_max_len
 
     # Don't forget to grab the labels of the *sorted* batch
-    targets = torch.stack([x[1] for x in sorted_batch]).long()
+    targets = torch.stack([x[2] for x in sorted_batch]).long()
 
     return [sequences_padded, lengths], [wav_forms_padded, wav_form_lengths], targets
 
