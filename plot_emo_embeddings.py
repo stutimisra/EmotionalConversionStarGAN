@@ -53,7 +53,6 @@ import torch.utils.data as data_utils
 import yaml
 
 import stargan.my_dataset as my_dataset
-from utils import audio_utils
 
 from speechbrain.pretrained.interfaces import foreign_class
 
@@ -103,7 +102,7 @@ def main(hf_model_id: str) -> None:
 
         # encoded_batch_with_labels: (batch_size, 769)
         encoded_batch_with_labels = torch.cat(
-            (encoded_batch, torch.unsqueeze(emotion_labels, dim=1)),
+            (encoded_batch.detach().cpu(), torch.unsqueeze(emotion_labels, dim=1)),
             dim=1
         )
 
