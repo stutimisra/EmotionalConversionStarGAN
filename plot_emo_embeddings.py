@@ -115,7 +115,7 @@ def main(hf_model_id: str) -> None:
     print("Finished reading data. Shape", data.shape)
 
     torch.save(data, "emo_embeddings_tensor.pkl")
-    print("Saved data to emo_embeddings_tensor.pkl")
+    print("Saved data to emo_embeddings.pt")
 
     ###
     #   Put data into a Pandas dataframe for ease of computation and plotting
@@ -127,8 +127,8 @@ def main(hf_model_id: str) -> None:
     print("Created data frame of length", len(df))
 
     # For debugging, save the dataframe to disk
-    df.to_pickle('emo_embeddings.pkl')
-    print("Saved data frame to emo_embeddings.pkl")
+    # df.to_pickle('emo_embeddings.pkl')
+    # print("Saved data frame to emo_embeddings.pkl")
 
     # See pretrained_models/CustomEncoder.../label_encoder.ckpy for index => emotion mappings
     df['label'] = df['y'].apply(lambda index: classifier.hparams.label_encoder.ind2lab[index])
