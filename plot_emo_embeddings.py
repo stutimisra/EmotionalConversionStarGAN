@@ -121,8 +121,11 @@ def main(hf_model_id: str) -> None:
     feature_cols = ['feature' + str(i) for i in range(n_features)]
     df = pd.DataFrame(data, columns=feature_cols + ['y'])
 
+    # For debugging, save the dataframe to disk
+    df.to_pickle('emo_embeddings.pkl')
+
     # See pretrained_models/CustomEncoder.../label_encoder.ckpy for index => emotion mappings
-    df['label'] = df['y'].apply(lambda index: classifier.hparams.label_encoder.decode_torch(index))
+    df['label'] = df['y'].apply(lambda index: classifier.hparams.label_encoder.ind2lab[index])
 
     ###
     #   Perform dimensionality reduction using t-SNE

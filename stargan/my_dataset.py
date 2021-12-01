@@ -154,7 +154,7 @@ class MyDataset(data_utils.Dataset):
             wav = audio_utils.load_wav(self.wavs_dir + "/" + f + ".wav")
         except ValueError as e:
             # The wav file is corrupted somehow. Just return another datapoint
-            print(f"Warning: {e}, retrieving item {self.repeat} instead")
+            print(f"Warning: {e} Retrieving item {self.repeat} instead")
             self.repeat += 1
             return self[self.repeat - 1]
 
