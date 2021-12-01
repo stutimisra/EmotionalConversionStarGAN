@@ -50,6 +50,7 @@ from sklearn.manifold import TSNE
 import time
 import torch
 import torch.utils.data as data_utils
+from tqdm import tqdm
 import yaml
 
 import stargan.my_dataset as my_dataset
@@ -96,7 +97,7 @@ def main(hf_model_id: str) -> None:
     #   Loop through audio files
     ###
     data_batches = []
-    for _, (wav_forms, wav_lengths), labels in data_loader:
+    for _, (wav_forms, wav_lengths), labels in tqdm(data_loader):
         # encoded_batch: (batch_size, 768)
         encoded_batch = classifier.encode_batch(wav_forms, wav_lengths)
 
