@@ -46,7 +46,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn.mainfold import TSNE
+from sklearn.manifold import TSNE
 import time
 import torch
 import torch.utils.data as data_utils
