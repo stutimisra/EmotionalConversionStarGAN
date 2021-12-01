@@ -96,11 +96,12 @@ def main(hf_model_id: str) -> None:
     #   Loop through audio files
     ###
     data_batches = []
-    for _, (wav_forms, wav_lengths), emotion_labels in data_loader:
+    for _, (wav_forms, wav_lengths), labels in data_loader:
         # encoded_batch: (batch_size, 768)
         encoded_batch = classifier.encode_batch(wav_forms, wav_lengths)
 
-        print(emotion_labels.shape)
+        # Only the first element is the emotion label. Second element is the speaker label.
+        emotion_labels = labels[:, 0]
 
         # encoded_batch_with_labels: (batch_size, 769)
         encoded_batch_with_labels = torch.cat(
