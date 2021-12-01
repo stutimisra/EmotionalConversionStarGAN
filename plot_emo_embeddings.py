@@ -114,6 +114,9 @@ def main(hf_model_id: str) -> None:
     data = torch.vstack(data_batches)
     print("Finished reading data. Shape", data.shape)
 
+    torch.save(data, "emo_embeddings_tensor.pkl")
+    print("Saved data to emo_embeddings_tensor.pkl")
+
     ###
     #   Put data into a Pandas dataframe for ease of computation and plotting
     #   Credits: https://towardsdatascience.com/visualising-high-dimensional-datasets-using-pca-and-t-sne-in-python-8ef87e7915b
