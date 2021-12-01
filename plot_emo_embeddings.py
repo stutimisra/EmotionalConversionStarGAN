@@ -112,6 +112,7 @@ def main(hf_model_id: str) -> None:
 
         data_batches.append(encoded_batch_with_labels)
     data = torch.vstack(data_batches)
+    print("Finished reading data. Shape", data.shape)
 
     ###
     #   Put data into a Pandas dataframe for ease of computation and plotting
@@ -120,9 +121,11 @@ def main(hf_model_id: str) -> None:
     n_features = data.shape[1] - 1
     feature_cols = ['feature' + str(i) for i in range(n_features)]
     df = pd.DataFrame(data, columns=feature_cols + ['y'])
+    print("Created data frame of length", len(df))
 
     # For debugging, save the dataframe to disk
     df.to_pickle('emo_embeddings.pkl')
+    print("Saved data frame to emo_embeddings.pkl")
 
     # See pretrained_models/CustomEncoder.../label_encoder.ckpy for index => emotion mappings
     df['label'] = df['y'].apply(lambda index: classifier.hparams.label_encoder.ind2lab[index])
