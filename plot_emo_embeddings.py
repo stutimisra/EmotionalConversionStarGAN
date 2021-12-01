@@ -100,9 +100,11 @@ def main(hf_model_id: str) -> None:
         # encoded_batch: (batch_size, 768)
         encoded_batch = classifier.encode_batch(wav_forms, wav_lengths)
 
+        print(emotion_labels.shape)
+
         # encoded_batch_with_labels: (batch_size, 769)
         encoded_batch_with_labels = torch.cat(
-            (encoded_batch.detach().cpu(), torch.unsqueeze(emotion_labels, dim=1)),
+            (encoded_batch.detach().cpu(), emotion_labels),
             dim=1
         )
 
