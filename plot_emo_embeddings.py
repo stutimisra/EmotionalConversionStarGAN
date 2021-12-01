@@ -114,7 +114,7 @@ def main(hf_model_id: str) -> None:
     data = torch.vstack(data_batches)
     print("Finished reading data. Shape", data.shape)
 
-    torch.save(data, "emo_embeddings_tensor.pkl")
+    torch.save(data, "emo_embeddings.pt")
     print("Saved data to emo_embeddings.pt")
 
     ###
