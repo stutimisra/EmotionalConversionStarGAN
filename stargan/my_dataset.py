@@ -141,13 +141,22 @@ class MyDataset(data_utils.Dataset):
 
         self.filenames = filenames
 
+        # @eric-zhizu: Every time __getitem__ fails, get the item at repeat
+        self.repeat = 0
+
     def __getitem__(self, index):
 
         f = self.filenames[index]
         mel = np.load(self.feat_dir + "/" + f + ".npy")
         label = np.load(self.labels_dir + "/" + f + ".npy")
         # @eric-zhizu: Needed for pretrained SER
-        wav = audio_utils.load_wav(self.wavs_dir + "/" + f + ".wav")
+        try:
+            wav = audio_utils.load_wav(self.wavs_dir + "/" + f + ".wav")
+        except ValueError as e:
+            # The wav file is corrupted somehow. Just return another datapoint
+            print(f"Warning: {e}, retrieving item {self.repeat} instead")
+            self.repeat += 1
+            return self[self.repeat - 1]
 
         mel = torch.FloatTensor(mel).t()
         label = torch.Tensor(label).long()
