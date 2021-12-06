@@ -210,7 +210,7 @@ if __name__=='__main__':
 
                     # If emotion is neutral
                     print("Pass one", filefront, filefront in neutral_to_emo_dict)
-                    print("Pass two", )
+                    print("Pass two", neutral_to_emo_dict.get(filefront))
                     if int(labels[0]) == i and filefront in neutral_to_emo_dict \
                             and ind2emo[i] in neutral_to_emo_dict[filefront]:
 
