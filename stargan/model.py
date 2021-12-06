@@ -335,6 +335,8 @@ class Generator_World(nn.Module):
 
         c1 = c.repeat(1, 1, x.size(2), x.size(3))
 
+        print(x.shape)
+        print(c1.shape)
         x = torch.cat([x, c1], dim=1)
 
         x = self.up1(x)
