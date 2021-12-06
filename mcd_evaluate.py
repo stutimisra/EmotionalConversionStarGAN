@@ -17,6 +17,7 @@ import math
 import os
 import pickle
 import shutil
+import pysptk
 
 import librosa
 from librosa.util import find_files
