@@ -243,14 +243,9 @@ if __name__=='__main__':
                 print("Distances", total_distances)
                 print("Counts", total_counts)
 
-    calculate_mcd(test_wav_files[:50], "test")
+        mcd_per_emotion = [total_distances[emo] / total_counts[emo]
+                           if total_counts[emo] != 0 else 0 for emo in range(len(total_counts))]
+        return mcd_per_emotion
 
-    ########################################
-    #         MEL CONVERSION LOOP          #
-    ########################################
-    ### NEVER IMPLEMENTED AS ENDED UP NOT USING MEL SPECTROGRAMS
-    # Make .npy arrays
-    # Make audio
-    # Make spec plots
+    return calculate_mcd(test_wav_files[:50], "test")
 
-    # Save all to directory
