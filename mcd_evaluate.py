@@ -209,8 +209,6 @@ if __name__=='__main__':
                     ind2emo = {0: 'Neutral', 1: 'Happy', 2: 'Sad'}
 
                     # If emotion is neutral
-                    print(filefront)
-                    print(filefront in neutral_to_emo_dict)
                     if int(labels[0]) == i and filefront in neutral_to_emo_dict \
                             and ind2emo[i] in neutral_to_emo_dict[filefront]:
 
