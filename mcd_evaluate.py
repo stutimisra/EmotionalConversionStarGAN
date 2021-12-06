@@ -261,5 +261,5 @@ if __name__=='__main__':
                            if total_counts[emo] != 0 else 0 for emo in range(len(total_counts))]
         return mcd_per_emotion
 
-    return calculate_mcd(test_wav_files[:100], "test")
+    print(calculate_mcd(test_wav_files[:100], "test"))
 
