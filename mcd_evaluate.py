@@ -90,6 +90,11 @@ if __name__=='__main__':
 
     print("Loading model at ", checkpoint_dir)
 
+    with open('neutral_mappings.pkl', 'rb') as f:
+        neutral_to_emo_dict = pickle.load(f)
+
+    print("Loaded neutral_mappings.pkl, mappings from neutral audio to emotional audio")
+
     #fix seeds to get consistent results
     SEED = 42
     # torch.backend.cudnn.deterministic = True
@@ -201,8 +206,17 @@ if __name__=='__main__':
 
                     fake = model.G(coded_sp, emo_targets[i].unsqueeze(0))
 
-                    # If source emotion = target emotion and emotion is neutral
-                    if int(labels[0]) == i and i == 0:
+                    ind2emo = {0: 'Neutral', 1: 'Happy', 2: 'Sad'}
+
+                    # If emotion is neutral
+                    if int(labels[0]) == i and filefront in neutral_to_emo_dict \
+                            and ind2emo[i] in neutral_to_emo_dict[filefront]:
+
+                        ref_wav_filefront = neutral_to_emo_dict[filefront][ind2emo[i]]
+                        input_wav_path = os.path.join(data_dir, ref_wav_filefront + '.wav')
+                        if not os.path.exists(input_wav_path):
+                            print(f"{input_wav_path} does not exist")
+                            continue
 
                         print(f"Converting {f[0:-4]} to {i}.")
                         model_iteration_string = model.config['model']['name'] + '_' + os.path.basename(args.checkpoint).replace('.ckpt', '')
@@ -247,5 +261,5 @@ if __name__=='__main__':
                            if total_counts[emo] != 0 else 0 for emo in range(len(total_counts))]
         return mcd_per_emotion
 
-    return calculate_mcd(test_wav_files[:50], "test")
+    return calculate_mcd(test_wav_files[:100], "test")
 
