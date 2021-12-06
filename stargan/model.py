@@ -325,7 +325,6 @@ class Generator_World(nn.Module):
         self.deconv = nn.ConvTranspose2d(32 + num_classes, 1, (9, 3), (1, 1), (4, 1))
 
     def forward(self, x, c):
-
         x = self.down1(x)
         x = self.down2(x)
         x = self.down3(x)

@@ -194,8 +194,10 @@ if __name__=='__main__':
                 continue
 
             # coded_sp_temp = np.copy(coded_sp).T
-            # print(coded_sp_temp.shape)
+            # coded_sp: (seq_len, dim) (512, 36)
+            # coded_sp_cpu: (dim, seq_len) (36, 512)
             coded_sp_cpu = coded_sp.T
+            # coded_sp: (batch_size = 1, 1, 36, 512)
             coded_sp = torch.Tensor(coded_sp_cpu).unsqueeze(0).unsqueeze(0).to(device = device)
 
             with torch.no_grad():
