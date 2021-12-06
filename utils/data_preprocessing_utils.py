@@ -29,7 +29,7 @@ def get_emotion_from_label(category):
     if category == 'Surprise' or category == '':
         return -1
 
-    conversion = {'Neutral': 0, 'Happy': 1, 'Sad': 2, 'Angry': 3, '中立': 0, '快乐': 1, '伤心': 2, '生气': 3}
+    conversion = {'Neutral': 0, 'Happy': 2, 'Sad': 3, 'Angry': 1, '中立': 0, '快乐': 2, '伤心': 3, '生气': 1}
 
     if category not in conversion:
         return -1
