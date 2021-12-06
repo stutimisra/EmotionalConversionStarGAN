@@ -170,18 +170,18 @@ if __name__=='__main__':
             wav = np.array(wav, dtype = np.float64)
             labels = np.array(labels)
 
-            # If wav file is not in original train / test input (and args.in_dir not specified), skip
-            if not args.in_dir and (labels[0] == -1 or labels[0] >= emo_targets.size(0)):
+            # If wav file is not in original train / test input
+            if labels[0] == -1 or labels[0] >= emo_targets.size(0):
                 continue
 
             # Temporary: @eric-zhizu, if speaker is <= 10, it is Chinese so skip
-            if not args.in_dir and labels[1] <= 10:
+            if labels[1] <= 10:
                 continue
 
             f0_real, ap_real, sp, coded_sp = pw.cal_mcep(wav)
 
             # If in_dir not specified, and length of the recording >= MAX_LENGTH, skip
-            if not args.in_dir and coded_sp.shape[1] >= MAX_LENGTH:
+            if coded_sp.shape[1] >= MAX_LENGTH:
                 continue
 
             # coded_sp_temp = np.copy(coded_sp).T
