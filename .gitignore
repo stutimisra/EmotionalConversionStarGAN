@@ -6,4 +6,5 @@
 /stdout.txt
 /wav2vec2_checkpoints/
 /pretrained_models/
+emo_embeddings.pt
 
