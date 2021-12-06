@@ -208,15 +208,18 @@ if __name__=='__main__':
 
                     ind2emo = {0: 'Neutral', 1: 'Happy', 2: 'Sad'}
 
-                    # If emotion is neutral
                     print("Pass one", filefront, filefront in neutral_to_emo_dict)
                     print("Pass two", neutral_to_emo_dict.get(filefront))
                     print("ind2emo", ind2emo[i])
+                    if filefront in neutral_to_emo_dict:
+                        print("Pass three", ind2emo[i] in neutral_to_emo_dict[filefront])
                     if int(labels[0]) == i and filefront in neutral_to_emo_dict \
                             and (ind2emo[i] in neutral_to_emo_dict[filefront] or i == 0):
 
-                        ref_wav_filefront = neutral_to_emo_dict[filefront][ind2emo[i]]
-                        input_wav_path = os.path.join(data_dir, ref_wav_filefront + '.wav')
+                        if i != 0:
+                            ref_wav_filefront = neutral_to_emo_dict[filefront][ind2emo[i]]
+                            input_wav_path = os.path.join(data_dir, ref_wav_filefront + '.wav')
+
                         if not os.path.exists(input_wav_path):
                             print(f"{input_wav_path} does not exist")
                             continue
