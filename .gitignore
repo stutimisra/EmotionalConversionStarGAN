@@ -4,3 +4,5 @@
 /samples/
 /logs/
 /stdout.txt
+pretrained_models
+wav2vec2_checkpoints
