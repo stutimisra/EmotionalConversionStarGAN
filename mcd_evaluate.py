@@ -208,12 +208,7 @@ if __name__=='__main__':
 
                     ind2emo = {0: 'Neutral', 1: 'Happy', 2: 'Sad'}
 
-                    print("Pass one", filefront, filefront in neutral_to_emo_dict)
-                    print("Pass two", neutral_to_emo_dict.get(filefront))
-                    print("ind2emo", ind2emo[i])
-                    if filefront in neutral_to_emo_dict:
-                        print("Pass three", ind2emo[i] in neutral_to_emo_dict[filefront])
-                    if int(labels[0]) == i and filefront in neutral_to_emo_dict \
+                    if filefront in neutral_to_emo_dict \
                             and (ind2emo[i] in neutral_to_emo_dict[filefront] or i == 0):
 
                         if i != 0:
