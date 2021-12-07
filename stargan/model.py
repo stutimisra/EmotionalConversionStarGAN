@@ -345,11 +345,12 @@ class Generator_World(nn.Module):
         x = self.down5(x)
 
         #what are the SER embeddings size?
-
+        print("c.shape", c.shape)
+        print("x.shape", x.shape)
         c = c.view(c.size(0), c.size(1), 1, 1)
 
         c1 = c.repeat(1, 1, x.size(2), x.size(3))
-
+        # we probably need to change x size to 768
         x = torch.cat([x, c1], dim=1)
 
         x = self.up1(x)

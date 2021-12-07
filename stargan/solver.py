@@ -163,7 +163,8 @@ class Solver(object):
             emo_targets_ones = F.one_hot(emo_targets, num_classes=num_emos).float().to(device=self.device)
 
             ser_embeddings = self.model.emo_cls.encode_batch(wav)
-            print("SER embeddings dimensions", ser_embeddings)
+            ser_target_embeddings = self.make_random_ser_embedding(num_emos, ser_embeddings.size(0))
+            print("SER embeddings dimensions", ser_embeddings.shape)
             ce_weighted_loss_fn = nn.CrossEntropyLoss(weight=self.emo_loss_weights)
             ce_loss_fn = nn.CrossEntropyLoss()
 
@@ -175,12 +176,15 @@ class Solver(object):
                 self.model.reset_grad()
 
                 # Get results for x_fake
-                x_fake = self.model.G(x_real, emo_targets_ones)
+                #x_fake = self.model.G(x_real, emo_targets_ones)
+                x_fake = self.model.G(x_real, ser_target_embeddings)
                 # ;;; GET NEW X_LENS HERE
 
                 # Get real/fake predictions
-                d_preds_real = self.model.D(x_real, emo_labels_ones)
-                d_preds_fake = self.model.D(x_fake.detach(), emo_targets_ones)
+                #d_preds_real = self.model.D(x_real, emo_labels_ones)
+                d_preds_real = self.model.D(x_real, ser_embeddings)
+                #d_preds_fake = self.model.D(x_fake.detach(), emo_targets_ones)
+                d_preds_fake = self.model.D(x_fake.detach(), ser_target_embeddings)
                 # print(x_real.size())
                 # print(x_fake.size())
 
