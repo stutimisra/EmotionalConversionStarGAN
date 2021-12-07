@@ -216,7 +216,7 @@ class StarGAN_emo_VC1(object):
         print(load_dir)
 
         # if map_location is not None:
-        #     dictionary = torch.load(load_dir, map_location=map_location)
+        #     dictionary = torch.load(load_dir, m ap_location=map_location)
         # else:
         #     dictionary = torch.load(load_dir)
 
@@ -346,10 +346,12 @@ class Generator_World(nn.Module):
 
         #what are the SER embeddings size?
         print("c.shape", c.shape)
-        print("x.shape", x.shape)
+        print("x.shape after dp", x.shape)
         c = c.view(c.size(0), c.size(1), 1, 1)
 
         c1 = c.repeat(1, 1, x.size(2), x.size(3))
+
+        print("c1.shape after dp", c1.shape)
         # we probably need to change x size to 768
         x = torch.cat([x, c1], dim=1)
 
