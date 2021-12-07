@@ -202,7 +202,7 @@ if __name__=='__main__':
 
             with torch.no_grad():
                 # print(emo_targets)
-                for i in range (0, emo_targets.size(0)):
+                for i in range(0, emo_targets.size(0)):
                     f0 = np.copy(f0_real)
                     ap = np.copy(ap_real)
 
