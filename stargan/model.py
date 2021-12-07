@@ -21,6 +21,7 @@ class StarGAN_emo_VC1(object):
     """
     The proposed model of this project.
     """
+
     def __init__(self, config, name):
         """
         Need config for input_size, hidden_size, num_layers, num_classes, bi = False
@@ -37,7 +38,8 @@ class StarGAN_emo_VC1(object):
     def set_train_mode(self):
         self.G.train()
         self.D.train()
-        self.emo_cls.train()
+        if self.emo_cls is Emotion_Classifier:
+            self.emo_cls.train()
 
         if self.use_speaker:
             self.speaker_cls.train()
@@ -47,7 +49,8 @@ class StarGAN_emo_VC1(object):
     def set_eval_mode(self):
         self.G.eval()
         self.D.eval()
-        self.emo_cls.eval()
+        if self.emo_cls is Emotion_Classifier:
+            self.emo_cls.eval()
 
         if self.use_speaker:
             self.speaker_cls.eval()
@@ -93,11 +96,14 @@ class StarGAN_emo_VC1(object):
         else:
             self.G = nn.DataParallel(Generator_World(self.num_emotions))
         self.D = nn.DataParallel(Discriminator(self.num_emotions))
-        self.emo_cls = nn.DataParallel(Emotion_Classifier(self.num_input_feats,
-                                                          self.hidden_size,
-                                                          self.num_layers,
-                                                          self.num_emotions,
-                                                          bi=self.bi))
+
+        # self.emo_cls = nn.DataParallel(Emotion_Classifier(self.num_input_feats,
+        #                                                   self.hidden_size,
+        #                                                   self.num_layers,
+        #                                                   self.num_emotions,
+        #                                                   bi=self.bi))
+
+        self.load_pretrained_classifier()  # This has already been done in train_main
 
         self.speaker_cls = nn.DataParallel(Emotion_Classifier(self.num_input_feats,
                                                               self.hidden_size,
@@ -115,11 +121,14 @@ class StarGAN_emo_VC1(object):
         con_opt = self.config['optimizer']
         self.g_optimizer = torch.optim.Adam(self.G.parameters(), con_opt['g_lr'], [con_opt['beta1'], con_opt['beta2']])
         self.d_optimizer = torch.optim.Adam(self.D.parameters(), con_opt['d_lr'], [con_opt['beta1'], con_opt['beta2']])
-        self.emo_cls_optimizer = torch.optim.Adam(self.emo_cls.parameters(), con_opt['emo_cls_lr'], [con_opt['beta1'], con_opt['beta2']],weight_decay=0.000001)
+
+        # self.emo_cls_optimizer = torch.optim.Adam(self.emo_cls.parameters(), con_opt['emo_cls_lr'], [con_opt['beta1'], con_opt['beta2']],weight_decay=0.000001)
         if self.use_speaker:
-            self.speaker_cls_optimizer = torch.optim.Adam(self.speaker_cls.parameters(), con_opt['speaker_cls_lr'], [con_opt['beta1'], con_opt['beta2']])
+            self.speaker_cls_optimizer = torch.optim.Adam(self.speaker_cls.parameters(), con_opt['speaker_cls_lr'],
+                                                          [con_opt['beta1'], con_opt['beta2']])
         if self.use_dimension:
-            self.dimension_cls_optimizer = torch.optim.Adam(self.dimension_cls.parameters(), con_opt['dim_cls_lr'], [con_opt['beta1'], con_opt['beta2']])
+            self.dimension_cls_optimizer = torch.optim.Adam(self.dimension_cls.parameters(), con_opt['dim_cls_lr'],
+                                                            [con_opt['beta1'], con_opt['beta2']])
 
         if self.config['verbose']:
             print("Network parameter list:")
@@ -154,7 +163,7 @@ class StarGAN_emo_VC1(object):
         """Reset the gradient buffers."""
         self.g_optimizer.zero_grad()
         self.d_optimizer.zero_grad()
-        self.emo_cls_optimizer.zero_grad()
+        # self.emo_cls_optimizer.zero_grad()
         if self.use_speaker:
             self.speaker_cls_optimizer.zero_grad()
         if self.use_dimension:
@@ -233,7 +242,8 @@ class StarGAN_emo_VC1(object):
         con_opt = self.config['optimizer']
         self.g_optimizer = torch.optim.Adam(self.G.parameters(), con_opt['g_lr'], [con_opt['beta1'], con_opt['beta2']])
         self.d_optimizer = torch.optim.Adam(self.D.parameters(), con_opt['d_lr'], [con_opt['beta1'], con_opt['beta2']])
-        self.emo_cls_optimizer = torch.optim.Adam(self.emo_cls.parameters(), con_opt['emo_cls_lr'], [con_opt['beta1'], con_opt['beta2']], weight_decay=0.000001)
+        self.emo_cls_optimizer = torch.optim.Adam(self.emo_cls.parameters(), con_opt['emo_cls_lr'],
+                                                  [con_opt['beta1'], con_opt['beta2']], weight_decay=0.000001)
 
         if 'spk' in dictionary:
             self.speaker_cls.load_state_dict(dictionary['spk'])
@@ -258,11 +268,12 @@ class StarGAN_emo_VC1(object):
         self.emo_cls = foreign_class(source="speechbrain/emotion-recognition-wav2vec2-IEMOCAP",
                                      pymodule_file="custom_interface.py",
                                      classname="CustomEncoderWav2vec2Classifier",
-                                     run_opts={"device":"cuda"})
+                                     run_opts={"device": "cuda"})
 
 
 class Down2d(nn.Module):
     """docstring for Down2d."""
+
     def __init__(self, in_channel, out_channel, kernel, stride, padding):
         super(Down2d, self).__init__()
 
@@ -285,6 +296,7 @@ class Down2d(nn.Module):
 
 class Up2d(nn.Module):
     """docstring for Up2d."""
+
     def __init__(self, in_channel, out_channel, kernel, stride, padding):
         super(Up2d, self).__init__()
         self.c1 = nn.ConvTranspose2d(in_channel, out_channel, kernel_size=kernel, stride=stride, padding=padding)
@@ -306,6 +318,7 @@ class Up2d(nn.Module):
 
 class Generator_World(nn.Module):
     """docstring for Generator."""
+
     def __init__(self, num_classes=4):
         super(Generator_World, self).__init__()
 
@@ -315,7 +328,7 @@ class Generator_World(nn.Module):
         self.down2 = Down2d(32, 64, (8, 4), (2, 2), (3, 1))
         self.down3 = Down2d(64, 128, (8, 4), (2, 2), (3, 1))
         self.down4 = Down2d(128, 64, (5, 3), (1, 1), (2, 1))
-        self.down5 = Down2d(64, 5, (5, 9), (1, 9), (2, 0))
+        self.down5 = Down2d(64, 5, (5, 9), (1, 9), (2, 0)) # we need to change this to embedding size
 
         self.up1 = Up2d(5 + num_classes, 64, (5, 9), (1, 9), (2, 0))
         self.up2 = Up2d(64 + num_classes, 128, (5, 3), (1, 1), (2, 1))
@@ -325,12 +338,13 @@ class Generator_World(nn.Module):
         self.deconv = nn.ConvTranspose2d(32 + num_classes, 1, (9, 3), (1, 1), (4, 1))
 
     def forward(self, x, c):
-
         x = self.down1(x)
         x = self.down2(x)
         x = self.down3(x)
         x = self.down4(x)
         x = self.down5(x)
+
+        #what are the SER embeddings size?
 
         c = c.view(c.size(0), c.size(1), 1, 1)
 
@@ -339,16 +353,16 @@ class Generator_World(nn.Module):
         x = torch.cat([x, c1], dim=1)
 
         x = self.up1(x)
-        c2 = c.repeat(1,1,x.size(2), x.size(3))
+        c2 = c.repeat(1, 1, x.size(2), x.size(3))
         x = torch.cat([x, c2], dim=1)
         x = self.up2(x)
-        c3 = c.repeat(1,1,x.size(2), x.size(3))
+        c3 = c.repeat(1, 1, x.size(2), x.size(3))
         x = torch.cat([x, c3], dim=1)
         x = self.up3(x)
-        c4 = c.repeat(1,1,x.size(2), x.size(3))
+        c4 = c.repeat(1, 1, x.size(2), x.size(3))
         x = torch.cat([x, c4], dim=1)
         x = self.up4(x)
-        c5 = c.repeat(1,1, x.size(2), x.size(3))
+        c5 = c.repeat(1, 1, x.size(2), x.size(3))
         x = torch.cat([x, c5], dim=1)
         x = self.deconv(x)
 
@@ -358,7 +372,7 @@ class Generator_World(nn.Module):
 class Generator_Mel(nn.Module):
     def __init__(self, num_classes):
         super(Generator_Mel, self).__init__()
-        self.unet = unet_model.UNet(1,1)
+        self.unet = unet_model.UNet(1, 1)
 
     def forward(self, x, c):
         x = self.unet(x)
@@ -367,6 +381,7 @@ class Generator_Mel(nn.Module):
 
 class Discriminator(nn.Module):
     """docstring for Discriminator."""
+
     def __init__(self, num_classes=4):
         super(Discriminator, self).__init__()
 
@@ -376,7 +391,7 @@ class Discriminator(nn.Module):
         self.d4 = Down2d(32 + num_classes, 32, (6, 3), (2, 1), (2, 1))
 
         self.conv = nn.Conv2d(32 + num_classes, 1, (5, 36), (1, 36), (2, 0))
-        self.pool = nn.AvgPool2d((64,1))
+        self.pool = nn.AvgPool2d((64, 1))
 
     def forward(self, x, c):
         c = c.view(c.size(0), c.size(1), 1, 1)

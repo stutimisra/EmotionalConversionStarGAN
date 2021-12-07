@@ -138,14 +138,15 @@ class Solver(object):
             # Get data from data loader
             print('Getting mini-batch.')
             try:
-                x, labels = next(data_iter)
+                x, wav, labels = next(data_iter)
             except:
                 # print("In here")
                 data_iter = iter(self.train_loader)
-                x, labels = next(data_iter)
+                x, wav, labels = next(data_iter)
 
             x_real = x[0].to(device = self.device).unsqueeze(1)
             x_lens = x[1].to(device = self.device)
+            wav = wav.to(device = self.device)
             print(f"solver.train: x_real size = {x_real.size()}")
 
             emo_labels = labels[:, 0].to(device=self.device)
@@ -161,6 +162,8 @@ class Solver(object):
             emo_labels_ones = F.one_hot(emo_labels, num_classes=num_emos).float().to(device=self.device)
             emo_targets_ones = F.one_hot(emo_targets, num_classes=num_emos).float().to(device=self.device)
 
+            ser_embeddings = self.model.emo_cls.encode_batch(wav)
+            print("SER embeddings dimensions", ser_embeddings)
             ce_weighted_loss_fn = nn.CrossEntropyLoss(weight=self.emo_loss_weights)
             ce_loss_fn = nn.CrossEntropyLoss()
 
@@ -200,12 +203,15 @@ class Solver(object):
 
                 self.model.reset_grad()
 
-                x_fake = self.model.G(x_real, emo_targets_ones)
+                #x_fake = self.model.G(x_real, emo_targets_ones)
+                x_fake = self.model.G(x_real, ser_target_embeddings)
                 # ;;; GET NEW X_LENS HERE
                 x_fake_lens = x_lens
 
-                x_cycle = self.model.G(x_fake, emo_labels_ones)
-                x_id = self.model.G(x_real, emo_labels_ones)
+                #x_cycle = self.model.G(x_fake, emo_labels_ones)
+                x_cycle = self.model.G(x_fake, ser_embeddings)
+                #x_id = self.model.G(x_real, emo_labels_ones)
+                x_id = self.model.G(x_real, ser_embeddings)
                 d_preds_for_g = self.model.D(x_fake, emo_targets_ones)
 
                 # x_cycle = self.make_equal_length(x_cycle, x_real)
@@ -537,6 +543,21 @@ class Solver(object):
             labels[i] = random.choice(domain_list).item()
 
         return labels.long()
+
+
+    def make_random_ser_embedding(self, num_domains, num_embeddings):
+        """
+        Creates random labels for generator.
+        num_domains: number of unique labels
+        num_labels: total number of labels to generate
+        """
+        domain_list = np.arange(0, num_domains)
+        # print(domain_list)
+        embeddings = torch.zeros((num_embeddings))
+        for i in range(0, num_embeddings):
+            embeddings[i] = random.choice(domain_list).item()
+
+        return embeddings.long()
 
     def gradient_penalty(self, x_real, x_fake, targets):
         """Compute gradient penalty: (L2_norm(dy/dx) - 1)**2.
