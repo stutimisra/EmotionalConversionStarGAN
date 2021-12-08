@@ -178,14 +178,15 @@ class EmbedDataset(data_utils.Dataset):
         emo_list = ('Neutral', 'Angry', 'Happy', 'Sad')
 
         # @eric-zhizu: Lazily hard-coded 768, but can be found in pretrained_models/.../hyperparams.yaml
-        emo_embeddings = torch.zeros(self.num_classes, 768)
+        emo_embeddings_list = []
         for emo_idx, emo_label in enumerate(emo_list):
             if emo_label in emo_embeddings_dict:
-                emo_embeddings[emo_idx] = emo_embeddings_dict[emo_label]
+                emo_embeddings_list.append(torch.squeeze(emo_embeddings_dict[emo_label]))
             else:
                 # If for some reason the ref audio doesn't exist in the other emotion,
                 # use the avg target emotion embedding
-                emo_embeddings[emo_idx] = self.avg_embeddings[emo_idx]
+                emo_embeddings_list.append(self.avg_embeddings[emo_idx, :])
+        emo_embeddings = torch.vstack(emo_embeddings_list)
 
         return mel, emo_embeddings, label
 

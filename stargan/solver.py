@@ -161,6 +161,9 @@ class Solver(object):
             emo_targets = emo_targets.to(device=self.device)
 
             # emotion embeddings: (batch_size, num_emos, 768) ==> (batch_size, 768)
+            print("Emo labels", emo_labels.shape)
+            print("Emo targets", emo_targets.shape)
+            print("Emo embeddings", emo_embeddings.shape)
             emo_embedding_source = emo_embeddings[torch.arange(emo_embeddings.size(0)), emo_labels, :]
             emo_embedding_target = emo_embeddings[torch.arange(emo_embeddings.size(0)), emo_targets, :]
 
