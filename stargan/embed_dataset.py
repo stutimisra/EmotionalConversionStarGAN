@@ -213,7 +213,7 @@ def collate_length_order(batch):
     sequences = [x[0] for x in sorted_batch]
 
     # @eric-zhizu: Get emo embeddings
-    emo_embeddings = torch.vstack([x[1] for x in sorted_batch])
+    emo_embeddings = torch.stack([x[1] for x in sorted_batch])
 
     #################################################
     #            FOR FIXED LENGTH INPUTS            #
