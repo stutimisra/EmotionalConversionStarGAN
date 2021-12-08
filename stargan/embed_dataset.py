@@ -142,18 +142,8 @@ class EmbedDataset(data_utils.Dataset):
 
         self.filenames = filenames
 
-        # @eric-zhizu: Get average emotion embeddings. Shapes: (1, 768)
-        avg_neutral_embedding = torch.load('finetuned_ser_embed/avg_neutral_embedding.pt')
-        avg_happy_embedding = torch.load('finetuned_ser_embed/avg_happy_embedding.pt')
-        avg_sad_embedding = torch.load('finetuned_ser_embed/avg_sad_embedding.pt')
-        avg_angry_embedding = torch.load('finetuned_ser_embed/avg_angry_embedding.pt')
+        # @eric-zhizu: Get average emotion embeddings
 
-        # @eric-zhizu: self.avg_embeddings shape: (4, 768)
-        self.avg_embeddings = torch.cat((
-            avg_neutral_embedding,
-            avg_angry_embedding,
-            avg_happy_embedding,
-            avg_sad_embedding), dim=0)
 
         # @eric-zhizu: Every time __getitem__ fails, get the item at repeat
         self.repeat = 0
@@ -168,26 +158,18 @@ class EmbedDataset(data_utils.Dataset):
 
         # @eric-zhizu: Add emotion embeddings to the dataset
         emo_embeddings_path = os.path.join(self.dataset_dir, 'emo_embeddings', f + '.pt')
-        if not os.path.exists(emo_embeddings_path):
-            print(f"Warning: {emo_embeddings_path} does not exist. Retrieving item {self.repeat} instead")
-            self.repeat += 1
-            return self[self.repeat - 1]
-        emo_embeddings_dict = torch.load(emo_embeddings_path)
+        emo_embeddings = torch.load(emo_embeddings_path)
 
-        # @eric-zhizu: Use this to convert emo_label ==> emo_index. So 'Neutral' maps to 0, 'Angry' to 1, etc.
+        # Use this to convert emo_label ==> emo_index. So 'Neutral' maps to 0, 'Angry' to 1, etc.
         emo_list = ('Neutral', 'Angry', 'Happy', 'Sad')
 
         # @eric-zhizu: Lazily hard-coded 768, but can be found in pretrained_models/.../hyperparams.yaml
-        emo_embeddings = torch.zeros(self.num_classes, 768)
+        emo_embeds_tensors = torch.zeros(self.num_classes, 768)
         for emo_idx, emo_label in enumerate(emo_list):
-            if emo_label in emo_embeddings_dict:
-                emo_embeddings[emo_idx] = emo_embeddings_dict[emo_label]
-            else:
-                # If for some reason the ref audio doesn't exist in the other emotion,
-                # use the avg target emotion embedding
-                emo_embeddings[emo_idx] = self.avg_embeddings[emo_idx]
+            if emo_label in emo_embeddings:
+                emo_embeds_tensors[emo_idx] = emo_embeddings[emo_label]
 
-        return mel, emo_embeddings, label
+        return mel, (emo_embeds_tensors, available_emos), label
 
     def __len__(self):
         return len(self.filenames)
@@ -211,8 +193,8 @@ def collate_length_order(batch):
     # Get each sequence and pad it
     sequences = [x[0] for x in sorted_batch]
 
-    # @eric-zhizu: Get emo embeddings
-    emo_embeddings = [x[1] for x in sorted_batch]
+    # @eric-zhizu: Get each wav form and pad it
+    wav_forms = [x[1] for x in sorted_batch]
 
     #################################################
     #            FOR FIXED LENGTH INPUTS            #
@@ -223,6 +205,8 @@ def collate_length_order(batch):
             sequences[i] = seq[start_index:start_index+512, :]
 
     sequences_padded = torch.nn.utils.rnn.pad_sequence(sequences, batch_first=True)
+    # @eric-zhizu
+    wav_forms_padded = torch.nn.utils.rnn.pad_sequence(wav_forms, batch_first=True)
 
     current_len = sequences_padded.size(1)
 
@@ -239,10 +223,14 @@ def collate_length_order(batch):
             lengths[i] = 512
     lengths = torch.LongTensor([len(x) for x in sequences])
 
+    # @eric-zhizu: speechbrain interface requires that lengths be normalized to 1
+    wav_forms_max_len = wav_forms_padded.size(1)
+    wav_form_lengths = torch.LongTensor([len(x) for x in wav_forms]) / wav_forms_max_len
+
     # Don't forget to grab the labels of the *sorted* batch
     targets = torch.stack([x[2] for x in sorted_batch]).long()
 
-    return [sequences_padded, lengths], emo_embeddings, targets
+    return [sequences_padded, lengths], [wav_forms_padded, wav_form_lengths], targets
 
 
 def make_variable_dataloader(train_set, test_set, batch_size=64):
