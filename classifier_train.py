@@ -26,9 +26,9 @@ import argparse
 import librosa
 
 from utils import audio_utils
-import stargan.embed_dataset as my_dataset
+import stargan.my_dataset as my_dataset
 import stargan.classifiers as classifiers
-from stargan.embed_dataset import get_filenames
+from stargan.my_dataset import get_filenames
 from train_main import make_weight_vector
 
 import torchvision
@@ -275,8 +275,8 @@ if __name__=='__main__':
     print(len(train_files))
     print(len(test_files))
 
-    train_dataset = my_dataset.EmbedDataset(config, train_files)
-    test_dataset = my_dataset.EmbedDataset(config, test_files)
+    train_dataset = my_dataset.MyDataset(config, train_files)
+    test_dataset = my_dataset.MyDataset(config, test_files)
 
     batch_size = 16
 
