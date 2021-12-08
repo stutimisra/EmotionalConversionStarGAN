@@ -58,6 +58,7 @@ class StarGAN_emo_VC1(object):
             self.G.to(device=device)
             self.D.to(device=device)
             self.emo_cls.to(device=device)
+            self.emo_cls.device = device
 
             if self.use_speaker:
                 self.speaker_cls.to(device=device)
