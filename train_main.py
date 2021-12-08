@@ -61,6 +61,8 @@ if __name__ == '__main__':
                         help="Model name for training.")
     parser.add_argument("-c", "--checkpoint", type=str, default=None,
                         help="Directory of checkpoint to resume training from")
+    parser.add_argument("--load_emo", type=str, default=None,
+                        help="Directory of pretrained emotional classifier checkpoint to use if desired.")
     parser.add_argument("--recon_only", help='Train a model without auxiliary classifier: learn to reconstruct input.',
                         action='store_true')
     parser.add_argument("--config", help='path of config file for training. Defaults = ./config.yaml',
@@ -137,8 +139,9 @@ if __name__ == '__main__':
     print("Performing whole network training.")
     s = solver.Solver(train_loader, test_loader, config, load_dir=args.checkpoint, recon_only=args.recon_only)
 
-    s.model.load_pretrained_classifier()
-    print("Loaded pre-trained emotional classifier.")
+    if args.load_emo is not None:
+        s.model.load_pretrained_classifier(args.load_emo, map_location='cpu')
+        print("Loaded pre-trained emotional classifier.")
 
     if args.alter:
         print(f"Changing loaded config to new config {args.config}.")
