@@ -161,7 +161,8 @@ class Solver(object):
             emo_targets = emo_targets.to(device=self.device)
 
             # emotion embeddings: (batch_size, num_emos, 768) ==> (batch_size, 768)
-            emo_embedding = emo_embeddings[torch.arange(emo_embeddings.size(0)), emo_targets, :]
+            emo_embedding_source = emo_embeddings[torch.arange(emo_embeddings.size(0)), emo_labels, :]
+            emo_embedding_target = emo_embeddings[torch.arange(emo_embeddings.size(0)), emo_targets, :]
 
             # one-hot versions of labels
             emo_labels_ones = F.one_hot(emo_labels, num_classes=num_emos).float().to(device=self.device)
@@ -178,7 +179,7 @@ class Solver(object):
                 self.model.reset_grad()
 
                 # Get results for x_fake
-                x_fake = self.model.G(x_real, emo_embedding)
+                x_fake = self.model.G(x_real, emo_embedding_target)
                 # ;;; GET NEW X_LENS HERE
 
                 # Get real/fake predictions
@@ -206,12 +207,12 @@ class Solver(object):
 
                 self.model.reset_grad()
 
-                x_fake = self.model.G(x_real, emo_embedding)
+                x_fake = self.model.G(x_real, emo_embedding_target)
                 # ;;; GET NEW X_LENS HERE
                 x_fake_lens = x_lens
 
-                x_cycle = self.model.G(x_fake, emo_labels_ones)
-                x_id = self.model.G(x_real, emo_labels_ones)
+                x_cycle = self.model.G(x_fake, emo_embedding_source)
+                x_id = self.model.G(x_real, emo_embedding_source)
                 d_preds_for_g = self.model.D(x_fake, emo_targets_ones)
 
                 # x_cycle = self.make_equal_length(x_cycle, x_real)
@@ -324,7 +325,7 @@ class Solver(object):
         total_cycle = torch.rand(0).to(device=self.device, dtype=torch.float)
         l1_loss_fn = nn.L1Loss()
 
-        for i, (x, labels) in enumerate(self.test_loader):
+        for i, (x, emo_embeddings, labels) in enumerate(self.test_loader):
 
             x_real = x[0].to(device=self.device)
             x_lens = x[1].to(device=self.device)
@@ -341,15 +342,19 @@ class Solver(object):
             emo_targets = self.make_random_labels(num_emos, emo_labels.size(0))
             emo_targets = emo_targets.to(device=self.device)
 
+            # emotion embeddings: (batch_size, num_emos, 768) ==> (batch_size, 768)
+            emo_embedding_source = emo_embeddings[torch.arange(emo_embeddings.size(0)), emo_labels, :]
+            emo_embedding_target = emo_embeddings[torch.arange(emo_embeddings.size(0)), emo_targets, :]
+
             # one-hot versions of labels
             emo_labels_ones = F.one_hot(emo_labels, num_classes=num_emos).float().to(device=self.device)
             emo_targets_ones = F.one_hot(emo_targets, num_classes=num_emos).float().to(device=self.device)
 
             with torch.no_grad():
 
-                x_fake = self.model.G(x_real, emo_targets_ones)
-                x_id = self.model.G(x_real, emo_labels_ones)
-                x_cycle = self.model.G(x_fake, emo_labels_ones)
+                x_fake = self.model.G(x_real, emo_embedding_target)
+                x_id = self.model.G(x_real, emo_embedding_source)
+                x_cycle = self.model.G(x_fake, emo_embedding_source)
 
                 new_lens = x_lens #;;; needs doing
 
