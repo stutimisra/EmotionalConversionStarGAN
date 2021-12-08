@@ -260,7 +260,8 @@ class StarGAN_emo_VC1(object):
 
         print("Model and optimizers loaded.")
 
-    def load_pretrained_classifier(self, load_dir, map_location=None):
+    #def load_pretrained_classifier(self, load_dir, map_location=None):
+    def load_pretrained_classifier(self, map_location=None):
         """Load pretrained emotion classifier from hugging face
 
         Read more: https://huggingface.co/speechbrain/emotion-recognition-wav2vec2-IEMOCAP
