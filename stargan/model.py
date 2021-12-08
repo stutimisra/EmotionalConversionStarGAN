@@ -16,7 +16,6 @@ import stargan.unet.unet_model as unet_model
 
 from speechbrain.pretrained.interfaces import foreign_class
 
-
 class StarGAN_emo_VC1(object):
     """
     The proposed model of this project.
@@ -59,7 +58,6 @@ class StarGAN_emo_VC1(object):
             self.G.to(device=device)
             self.D.to(device=device)
             self.emo_cls.to(device=device)
-            self.emo_cls.device = device
 
             if self.use_speaker:
                 self.speaker_cls.to(device=device)
@@ -93,11 +91,13 @@ class StarGAN_emo_VC1(object):
         else:
             self.G = nn.DataParallel(Generator_World(self.num_emotions))
         self.D = nn.DataParallel(Discriminator(self.num_emotions))
+
+        # This is reloaded later in load_pretrained_classifier
         self.emo_cls = nn.DataParallel(Emotion_Classifier(self.num_input_feats,
-                                                          self.hidden_size,
-                                                          self.num_layers,
-                                                          self.num_emotions,
-                                                          bi=self.bi))
+                                                              self.hidden_size,
+                                                              self.num_layers,
+                                                              self.num_speakers,
+                                                              bi=self.bi))
 
         self.speaker_cls = nn.DataParallel(Emotion_Classifier(self.num_input_feats,
                                                               self.hidden_size,
@@ -224,6 +224,7 @@ class StarGAN_emo_VC1(object):
 
         self.D.load_state_dict(dictionary['D'])
         self.G.load_state_dict(dictionary['G'])
+
         self.emo_cls.load_state_dict(dictionary['emo'])
 
         # self.d_optimizer.load_state_dict(dictionary['d_opt'])
@@ -251,14 +252,22 @@ class StarGAN_emo_VC1(object):
         print("Model and optimizers loaded.")
 
     def load_pretrained_classifier(self, load_dir, map_location=None):
-        """Load pretrained emotion classifier from hugging face
+        if map_location is not None:
+            dictionary = torch.load(load_dir, map_location=map_location)
+        else:
+            dictionary = torch.load(load_dir)
 
-        Read more: https://huggingface.co/speechbrain/emotion-recognition-wav2vec2-IEMOCAP
+        con_opt = self.config['optimizer']
+        self.emo_cls.load_state_dict(dictionary['model_state_dict'])
+        self.emo_cls_optimizer = torch.optim.Adam(self.emo_cls.parameters(), con_opt['emo_cls_lr'],
+                                                  [con_opt['beta1'], con_opt['beta2']], weight_decay=0.000001)
+
         """
         self.emo_cls = foreign_class(source="speechbrain/emotion-recognition-wav2vec2-IEMOCAP",
                                      pymodule_file="custom_interface.py",
-                                     classname="CustomEncoderWav2vec2Classifier",
-                                     run_opts={"device":"cuda"})
+                                     classname="CustomEncoderWav2vec2Classifier")
+        self.emo_cls.load_state_dict(torch.load("finetune_ser_epoch_15.ckpt"))
+        """
 
 
 class Down2d(nn.Module):
@@ -311,46 +320,50 @@ class Generator_World(nn.Module):
 
         self.num_classes = num_classes
 
+        # @eric-zhizu
+        self.emo_embed_size = 768
+
         self.down1 = Down2d(1, 32, (9, 3), (1, 1), (4, 1))
         self.down2 = Down2d(32, 64, (8, 4), (2, 2), (3, 1))
         self.down3 = Down2d(64, 128, (8, 4), (2, 2), (3, 1))
         self.down4 = Down2d(128, 64, (5, 3), (1, 1), (2, 1))
         self.down5 = Down2d(64, 5, (5, 9), (1, 9), (2, 0))
 
-        self.up1 = Up2d(5 + num_classes, 64, (5, 9), (1, 9), (2, 0))
-        self.up2 = Up2d(64 + num_classes, 128, (5, 3), (1, 1), (2, 1))
-        self.up3 = Up2d(128 + num_classes, 64, (8, 4), (2, 2), (3, 1))
-        self.up4 = Up2d(64 + num_classes, 32, (8, 4), (2, 2), (3, 1))
+        self.up1 = Up2d(5, 64, (5, 9), (1, 9), (2, 0))
+        self.up2 = Up2d(64, 128, (5, 3), (1, 1), (2, 1))
+        self.up3 = Up2d(128 + self.emo_embed_size, 64, (8, 4), (2, 2), (3, 1))
+        self.up4 = Up2d(64, 32, (8, 4), (2, 2), (3, 1))
 
-        self.deconv = nn.ConvTranspose2d(32 + num_classes, 1, (9, 3), (1, 1), (4, 1))
+        self.deconv = nn.ConvTranspose2d(32, 1, (9, 3), (1, 1), (4, 1))
 
-    def forward(self, x, c):
+    def forward(self, x, emo_embedding):
         x = self.down1(x)
         x = self.down2(x)
         x = self.down3(x)
         x = self.down4(x)
         x = self.down5(x)
 
-        c = c.view(c.size(0), c.size(1), 1, 1)
+        # x: (batch_size, out_channels 5, dim1, dim2)
 
-        c1 = c.repeat(1, 1, x.size(2), x.size(3))
-
-        print(x.shape)
-        print(c1.shape)
-        x = torch.cat([x, c1], dim=1)
+        # emo_embedding: (batch_size, 768) ==> (batch_size, 768, 1, 1)
+        emo_embedding = emo_embedding.view(emo_embedding.size(0), emo_embedding.size(1), 1, 1)
 
         x = self.up1(x)
-        c2 = c.repeat(1,1,x.size(2), x.size(3))
-        x = torch.cat([x, c2], dim=1)
+
+        # emo_embedding_expanded: (batch_size, 768, x.size(2), x.size(3))
+        emo_embedding_expanded = emo_embedding.repeat(1, 1, x.size(2), x.size(3))
+        x = torch.cat([x, emo_embedding_expanded], dim=1)
         x = self.up2(x)
-        c3 = c.repeat(1,1,x.size(2), x.size(3))
-        x = torch.cat([x, c3], dim=1)
+
+        # x = torch.cat([x, c3], dim=1)
         x = self.up3(x)
-        c4 = c.repeat(1,1,x.size(2), x.size(3))
-        x = torch.cat([x, c4], dim=1)
+
+        #c4 = c.repeat(1,1,x.size(2), x.size(3))
+        #x = torch.cat([x, c4], dim=1)
         x = self.up4(x)
-        c5 = c.repeat(1,1, x.size(2), x.size(3))
-        x = torch.cat([x, c5], dim=1)
+
+        #c5 = c.repeat(1,1, x.size(2), x.size(3))
+        #x = torch.cat([x, c5], dim=1)
         x = self.deconv(x)
 
         return x
