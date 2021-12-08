@@ -65,7 +65,7 @@ def load_checkpoint(model, optimiser, filename='./checkpoints/cls_checkpoint.ckp
     return epoch
 
 def train_model(model, optimiser, train_data_loader, val_data_loader, loss_fn,
-                model_type='cls', epochs=1, print_every=10, var_len_data = False, start_epoch = 1):
+                model_type='cls', epochs=1, print_every=1, var_len_data = False, start_epoch = 1):
 
     model = model.to(device=device) # move the model parameters to CPU/GPU
 
@@ -114,7 +114,7 @@ def train_model(model, optimiser, train_data_loader, val_data_loader, loss_fn,
 
             # print("Epoch ", e, ", iteration", t, " done.")
 
-        if t % print_every == 0:
+        if e % print_every == 0:
 
             print(f'| Epoch: {e:02} | Train Loss: {total_loss:.3f}')
 
