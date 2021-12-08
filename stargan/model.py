@@ -351,12 +351,12 @@ class Generator_World(nn.Module):
 
         x = self.up1(x)
 
+        x = self.up2(x)
+
         # emo_embedding_expanded: (batch_size, 768, x.size(2), x.size(3))
         emo_embedding_expanded = emo_embedding.repeat(1, 1, x.size(2), x.size(3))
         x = torch.cat([x, emo_embedding_expanded], dim=1)
-        x = self.up2(x)
 
-        # x = torch.cat([x, c3], dim=1)
         x = self.up3(x)
 
         #c4 = c.repeat(1,1,x.size(2), x.size(3))
