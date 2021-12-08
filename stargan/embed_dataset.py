@@ -186,6 +186,8 @@ class EmbedDataset(data_utils.Dataset):
                 # If for some reason the ref audio doesn't exist in the other emotion,
                 # use the avg target emotion embedding
                 emo_embeddings_list.append(self.avg_embeddings[emo_idx, :])
+                print("Getting avg embedding")
+                print("Device", self.avg_embeddings[emo_idx, :].get_device())
         emo_embeddings = torch.vstack(emo_embeddings_list)
 
         return mel, emo_embeddings, label
