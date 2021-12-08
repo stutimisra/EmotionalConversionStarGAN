@@ -21,6 +21,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 import random
 import os
+from tqdm import tqdm
 import yaml
 import argparse
 import librosa
@@ -76,7 +77,7 @@ def train_model(model, optimiser, train_data_loader, val_data_loader, loss_fn,
 
         total_loss = 0
 
-        for t, (x, y) in enumerate(train_data_loader):
+        for t, (x, y) in tqdm(enumerate(train_data_loader)):
             model.train()  # put model to training mode
 
             if(var_len_data):
