@@ -41,7 +41,7 @@ class hyperparams(object):
         self.use_log_magnitude = True  # if False, use magnitude
         self.preemph = 0.97
 
-        self.config = yaml.safe_load(open('./config.yaml', 'r'))
+        self.config = yaml.safe_load(open('./config_extension.yaml', 'r'))
         self.sample_set_dir = self.config['logs']['sample_dir']
 
         self.normalise = self.config['data']['normalise']
