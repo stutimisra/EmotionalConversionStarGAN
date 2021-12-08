@@ -131,7 +131,7 @@ class Solver(object):
             self.model.to_device(device=self.device)
             print("Device is ", self.device)
             # @eric-zhizu: Only using emo_cls's output_mlp
-            print("Classifier device is ", self.model.emo_cls.modules.output_mlp.device)
+            print("Classifier device is ", self.model.emo_cls.device)
             self.model.set_train_mode()
 
             self.current_iter = i
