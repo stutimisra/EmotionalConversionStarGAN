@@ -87,6 +87,19 @@ if __name__=='__main__':
         device = torch.device('cpu')
         map_location='cpu'
 
+    # @eric-zhizu: Get average emotion embeddings. Shapes: (1, 768)
+    avg_neutral_embedding = torch.load('finetuned_ser_embed/avg_neutral_embedding.pt')
+    avg_happy_embedding = torch.load('finetuned_ser_embed/avg_happy_embedding.pt')
+    avg_sad_embedding = torch.load('finetuned_ser_embed/avg_sad_embedding.pt')
+    avg_angry_embedding = torch.load('finetuned_ser_embed/avg_angry_embedding.pt')
+
+    # @eric-zhizu: self.avg_embeddings shape: (4, 768)
+    avg_embeddings = torch.cat((
+        avg_neutral_embedding,
+        avg_angry_embedding,
+        avg_happy_embedding,
+        avg_sad_embedding), dim=0)
+
     # Load model
     model = model.StarGAN_emo_VC1(config, config['model']['name'])
     model.load(checkpoint_dir)
@@ -177,7 +190,28 @@ if __name__=='__main__':
                     f0 = audio_utils.f0_pitch_conversion(f0, (labels[0],labels[1]),
                                                              (i, labels[1]))
 
-                    fake = model.G(coded_sp, emo_targets[i].unsqueeze(0))
+                    # @eric-zhizu: Add emotion embeddings to the dataset
+                    emo_embeddings_path = os.path.join('processed_data/emo_embeddings', f + '.pt')
+                    if not os.path.exists(emo_embeddings_path):
+                        continue
+                    emo_embeddings_dict = torch.load(emo_embeddings_path)
+
+                    # @eric-zhizu: Use this to convert emo_label ==> emo_index. So 'Neutral' maps to 0, 'Angry' to 1, etc.
+                    emo_list = ('Neutral', 'Angry', 'Happy', 'Sad')
+
+                    # @eric-zhizu: Lazily hard-coded 768, but can be found in pretrained_models/.../hyperparams.yaml
+                    emo_embeddings_list = []
+                    for emo_idx, emo_label in enumerate(emo_list):
+                        if emo_label in emo_embeddings_dict:
+                            emo_embeddings_list.append(torch.squeeze(emo_embeddings_dict[emo_label]).cpu())
+                        else:
+                            # If for some reason the ref audio doesn't exist in the other emotion,
+                            # use the avg target emotion embedding
+                            emo_embeddings_list.append(avg_embeddings[emo_idx, :].cpu())
+                    emo_embeddings = torch.vstack(emo_embeddings_list)
+                    emo_embedding_target = emo_embeddings[torch.arange(emo_embeddings.size(0)), emo_labels[i], :]
+
+                    fake = model.G(coded_sp, emo_embedding_target.unsqueeze(0))
 
                     print(f"Converting {f[0:-4]} to {i}.")
                     model_iteration_string = model.config['model']['name'] + '_' + os.path.basename(args.checkpoint).replace('.ckpt', '')
