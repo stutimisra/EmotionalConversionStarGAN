@@ -97,7 +97,7 @@ class StarGAN_emo_VC1(object):
         self.emo_cls = nn.DataParallel(Emotion_Classifier(self.num_input_feats,
                                                               self.hidden_size,
                                                               self.num_layers,
-                                                              self.num_speakers,
+                                                              self.num_emotions,
                                                               bi=self.bi))
 
         self.speaker_cls = nn.DataParallel(Emotion_Classifier(self.num_input_feats,
