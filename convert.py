@@ -211,7 +211,7 @@ if __name__=='__main__':
                             # use the avg target emotion embedding
                             emo_embeddings_list.append(avg_embeddings[emo_idx, :].cpu())
                     emo_embeddings = torch.vstack(emo_embeddings_list)
-                    emo_embedding_target = emo_embeddings[torch.arange(emo_embeddings.size(0)), emo_labels[i], :]
+                    emo_embedding_target = emo_embeddings[emo_labels[i], :]
 
                     fake = model.G(coded_sp, emo_embedding_target.unsqueeze(0))
 
