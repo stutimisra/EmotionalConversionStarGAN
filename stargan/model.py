@@ -226,7 +226,8 @@ class StarGAN_emo_VC1(object):
         self.D.load_state_dict(dictionary['D'])
         self.G.load_state_dict(dictionary['G'])
 
-        self.emo_cls.load_state_dict(dictionary['emo'])
+        # @eric-zhizu: Commented out, loaded from load_pretrained_classifier
+        # self.emo_cls.load_state_dict(dictionary['emo'])
 
         # self.d_optimizer.load_state_dict(dictionary['d_opt'])
         # self.g_optimizer.load_state_dict(dictionary['g_opt'])
