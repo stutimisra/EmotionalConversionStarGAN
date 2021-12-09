@@ -151,7 +151,8 @@ if __name__=='__main__':
         Returns nothing
         """
         for file_num, f in enumerate(files):
-            f = os.path.basename(f)[:-4] + ".wav"
+            file_id = os.path.basename(f)[:-4]
+            f = file_id + ".wav"
 
             try:
                 wav, labels = pp.get_wav_and_labels(f, config['data']['dataset_dir'], annotations_dict)
@@ -191,8 +192,9 @@ if __name__=='__main__':
                                                              (i, labels[1]))
 
                     # @eric-zhizu: Add emotion embeddings to the dataset
-                    emo_embeddings_path = os.path.join('processed_data/emo_embeddings', f + '.pt')
+                    emo_embeddings_path = os.path.join('processed_data/emo_embeddings', file_id + '.pt')
                     if not os.path.exists(emo_embeddings_path):
+                        print("Path does not exist" , emo_embeddings_path)
                         continue
                     emo_embeddings_dict = torch.load(emo_embeddings_path)
 
