@@ -82,7 +82,7 @@ if __name__=='__main__':
 
     args = parser.parse_args()
 
-    config = yaml.safe_load(open('./config.yaml', 'r'))
+    config = yaml.safe_load(open('./config_extension.yaml', 'r'))
 
     args.out_dir = os.path.join(config['data']['dataset_dir'], 'converted')
 
