@@ -118,14 +118,25 @@ class Solver(object):
         self.update_lr(start_iter)
 
         # norm = Normalizer() #-------- ;;;WHAT DO I DO HERE ---------#
+        #for param_group in self.model.g_optimizer.param_groups:
+        #    self.g_lr = param_group['lr']
+        #for param_group in self.model.d_optimizer.param_groups:
+        #    self.d_lr = param_group['lr'] 
+        #for param_group in self.model.emo_cls_optimizer.param_groups:
+        #    self.emo_lr = param_group['lr']
+            
         data_iter = iter(self.train_loader)
 
+
         start_time = datetime.now()
-        print('Started at {}'.format(start_time))
 
+        #self.num_iters = 300000
+        #self.g_lr = 0.00001
+        #self.d_lr = 0.00001
+        #self.emo_lr = 0.00001
         # main training loop
-        for i in range(start_iter, self.num_iters+1):
-
+        #for i in range(start_iter, self.num_iters+1):
+        for i in range(start_iter, self.num_iters + 1):
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Iteration {:02}/{:02} ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~".format(i,self.num_iters))
             print("Iteration {:02} lr = {:.6f}".format(i, self.model.d_optimizer.param_groups[0]['lr']))
             self.model.to_device(device=self.device)

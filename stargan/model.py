@@ -97,7 +97,7 @@ class StarGAN_emo_VC1(object):
         self.emo_cls = nn.DataParallel(Emotion_Classifier(self.num_input_feats,
                                                               self.hidden_size,
                                                               self.num_layers,
-                                                              self.num_speakers,
+                                                              self.num_emotions,
                                                               bi=self.bi))
 
         self.speaker_cls = nn.DataParallel(Emotion_Classifier(self.num_input_feats,
@@ -226,7 +226,7 @@ class StarGAN_emo_VC1(object):
         self.D.load_state_dict(dictionary['D'])
         self.G.load_state_dict(dictionary['G'])
 
-        self.emo_cls.load_state_dict(dictionary['emo'])
+        #self.emo_cls.load_state_dict(dictionary['emo'])
 
         # self.d_optimizer.load_state_dict(dictionary['d_opt'])
         # self.g_optimizer.load_state_dict(dictionary['g_opt'])
@@ -330,10 +330,10 @@ class Generator_World(nn.Module):
         self.down4 = Down2d(128, 64, (5, 3), (1, 1), (2, 1))
         self.down5 = Down2d(64, 5, (5, 9), (1, 9), (2, 0))
 
-        self.up1 = Up2d(5, 64, (5, 9), (1, 9), (2, 0))
-        self.up2 = Up2d(64, 128, (5, 3), (1, 1), (2, 1))
+        self.up1 = Up2d(5 + self.emo_embed_size, 64, (5, 9), (1, 9), (2, 0))
+        self.up2 = Up2d(64 + self.emo_embed_size, 128, (5, 3), (1, 1), (2, 1))
         self.up3 = Up2d(128 + self.emo_embed_size, 64, (8, 4), (2, 2), (3, 1))
-        self.up4 = Up2d(64, 32, (8, 4), (2, 2), (3, 1))
+        self.up4 = Up2d(64 + self.emo_embed_size, 32, (8, 4), (2, 2), (3, 1))
 
         self.deconv = nn.ConvTranspose2d(32, 1, (9, 3), (1, 1), (4, 1))
 
@@ -348,8 +348,14 @@ class Generator_World(nn.Module):
 
         # emo_embedding: (batch_size, 768) ==> (batch_size, 768, 1, 1)
         emo_embedding = emo_embedding.view(emo_embedding.size(0), emo_embedding.size(1), 1, 1)
+        emo_embedding_expanded = emo_embedding.repeat(1, 1, x.size(2), x.size(3))
+        x = torch.cat([x, emo_embedding_expanded], dim=1)
 
         x = self.up1(x)
+
+       # emo_embedding = emo_embedding.view(emo_embedding.size(0), emo_embedding.size(1), 1, 1)
+        emo_embedding_expanded = emo_embedding.repeat(1, 1, x.size(2), x.size(3))
+        x = torch.cat([x, emo_embedding_expanded], dim=1)
 
         x = self.up2(x)
 
@@ -361,7 +367,13 @@ class Generator_World(nn.Module):
 
         #c4 = c.repeat(1,1,x.size(2), x.size(3))
         #x = torch.cat([x, c4], dim=1)
+        emo_embedding_expanded = emo_embedding.repeat(1, 1, x.size(2), x.size(3))
+        x = torch.cat([x, emo_embedding_expanded], dim=1)
+
         x = self.up4(x)
+        
+        #emo_embedding_expanded = emo_embedding.repeat(1, 1, x.size(2), x.size(3))
+        #x = torch.cat([x, emo_embedding_expanded], dim=1)
 
         #c5 = c.repeat(1,1, x.size(2), x.size(3))
         #x = torch.cat([x, c5], dim=1)
