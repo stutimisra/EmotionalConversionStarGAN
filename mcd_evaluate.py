@@ -1,19 +1,10 @@
 '''
-convert.py
+mcd_evaluate.py
 
-Author - Max Elliott
+Author - Eric Zhou
 
-Script to perform conversion of speech using fully trained StarGAN_emo_VC1
-models. Model checkpoints must be saved in the "../checkpoints" directory.
-Converted files will be saved in the ./samples directory in a folder named
-"<--out_dir>_<--iteration>_converted"
-
-Command line arguments:
-
-    --model -m     : Model name for conversion (as given by its config.yaml file)
-    --in_dir -n    : wav files to be converted (won't work in code archive)
-    --out_dir -o   : out directory name
-    --iteration -i : iteration number of the checkpoint being used
+Arguments:
+    --checkpoint -c     : Checkpoint for conversion
 '''
 
 import argparse
@@ -26,6 +17,7 @@ import math
 import os
 import pickle
 import shutil
+import pysptk
 
 import librosa
 from librosa.util import find_files
@@ -90,13 +82,18 @@ if __name__=='__main__':
 
     args = parser.parse_args()
 
-    config = yaml.safe_load(open('./config_extension.yaml', 'r'))
+    config = yaml.safe_load(open('./config.yaml', 'r'))
 
     args.out_dir = os.path.join(config['data']['dataset_dir'], 'converted')
 
     checkpoint_dir = args.checkpoint
 
     print("Loading model at ", checkpoint_dir)
+
+    with open('neutral_mappings.pkl', 'rb') as f:
+        neutral_to_emo_dict = pickle.load(f)
+
+    print("Loaded neutral_mappings.pkl, mappings from neutral audio to emotional audio")
 
     #fix seeds to get consistent results
     SEED = 42
@@ -179,30 +176,28 @@ if __name__=='__main__':
             wav = np.array(wav, dtype = np.float64)
             labels = np.array(labels)
 
-            # If wav file is not in original train / test input (and args.in_dir not specified), skip
-            if not args.in_dir and (labels[0] == -1 or labels[0] >= emo_targets.size(0)):
+            # If wav file is not in original train / test input
+            if labels[0] == -1 or labels[0] >= emo_targets.size(0):
                 continue
 
             # Temporary: @eric-zhizu, if speaker is <= 10, it is Chinese so skip
-            if not args.in_dir and labels[1] <= 10:
+            if labels[1] <= 10:
                 continue
 
             f0_real, ap_real, sp, coded_sp = pw.cal_mcep(wav)
 
             # If in_dir not specified, and length of the recording >= MAX_LENGTH, skip
-            if not args.in_dir and coded_sp.shape[1] >= MAX_LENGTH:
+            if coded_sp.shape[1] >= MAX_LENGTH:
                 continue
 
             # coded_sp_temp = np.copy(coded_sp).T
-            # coded_sp: (seq_len, dim) (512, 36)
-            # coded_sp_cpu: (dim, seq_len) (36, 512)
+            # print(coded_sp_temp.shape)
             coded_sp_cpu = coded_sp.T
-            # coded_sp: (batch_size = 1, 1, 36, 512)
             coded_sp = torch.Tensor(coded_sp_cpu).unsqueeze(0).unsqueeze(0).to(device = device)
 
             with torch.no_grad():
                 # print(emo_targets)
-                for i in range(0, emo_targets.size(0)):
+                for i in range (0, emo_targets.size(0)):
                     f0 = np.copy(f0_real)
                     ap = np.copy(ap_real)
 
@@ -211,8 +206,18 @@ if __name__=='__main__':
 
                     fake = model.G(coded_sp, emo_targets[i].unsqueeze(0))
 
-                    # If source emotion = target emotion and emotion is neutral
-                    if int(labels[0]) == i and i == 0:
+                    ind2emo = {0: 'Neutral', 1: 'Happy', 2: 'Sad'}
+
+                    if filefront in neutral_to_emo_dict \
+                            and (ind2emo[i] in neutral_to_emo_dict[filefront] or i == 0):
+
+                        if i != 0:
+                            ref_wav_filefront = neutral_to_emo_dict[filefront][ind2emo[i]]
+                            input_wav_path = os.path.join(data_dir, ref_wav_filefront + '.wav')
+
+                        if not os.path.exists(input_wav_path):
+                            print(f"{input_wav_path} does not exist")
+                            continue
 
                         print(f"Converting {f[0:-4]} to {i}.")
                         model_iteration_string = model.config['model']['name'] + '_' + os.path.basename(args.checkpoint).replace('.ckpt', '')
@@ -253,14 +258,9 @@ if __name__=='__main__':
                 print("Distances", total_distances)
                 print("Counts", total_counts)
 
-    calculate_mcd(test_wav_files[:50], "test")
+        mcd_per_emotion = [total_distances[emo] / total_counts[emo]
+                           if total_counts[emo] != 0 else 0 for emo in range(len(total_counts))]
+        return mcd_per_emotion
 
-    ########################################
-    #         MEL CONVERSION LOOP          #
-    ########################################
-    ### NEVER IMPLEMENTED AS ENDED UP NOT USING MEL SPECTROGRAMS
-    # Make .npy arrays
-    # Make audio
-    # Make spec plots
+    print(calculate_mcd(test_wav_files[:500], "test"))
 
-    # Save all to directory
