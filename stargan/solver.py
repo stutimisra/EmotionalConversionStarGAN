@@ -56,8 +56,8 @@ class Solver(object):
         # over the training iterations
         # self.g_lr = self.config['optimizer']['g_lr']
         # self.d_lr = self.config['optimizer']['d_lr']
-        self.g_lr = 0.00001
-        self.d_lr = 0.00001
+        self.g_lr = 0.000004
+        self.d_lr = 0.000004
         self.emo_lr = self.config['optimizer']['emo_cls_lr']
         self.speaker_lr = self.config['optimizer']['speaker_cls_lr']
         self.dim_lr = self.config['optimizer']['dim_cls_lr']
@@ -79,11 +79,11 @@ class Solver(object):
         self.batch_size = self.config['model']['batch_size']
 
         # self.num_iters = self.config['loss']['num_iters']
-        self.num_iters = 600000
+        self.num_iters = 730000
         # self.num_iters_decay = self.config['loss']['num_iters_decay']
-        self.num_iters_decay = 150000
+        self.num_iters_decay = 200000
         # self.resume_iters = self.config['loss']['resume_iters']
-        self.resume_iters = 400000
+        self.resume_iters = 530000
         self.current_iter = self.resume_iters
 
         # Number of D/emo_cls updates for each G update

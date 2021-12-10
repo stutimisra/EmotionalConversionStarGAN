@@ -16,9 +16,9 @@ loss:
     lambda_cycle: 3
     lambda_id: 2
 
-    num_iters: 600000
-    num_iters_decay: 150000
-    resume_iters: 400000
+    num_iters: 730000
+    num_iters_decay: 200000
+    resume_iters: 530000
 
     train_classifier: False
     c_to_g_ratio: 5
@@ -29,8 +29,8 @@ optimizer:
     beta1: 0.5
     beta2: 0.999
 
-    g_lr: 0.00001
-    d_lr: 0.00001
+    g_lr: 0.000004
+    d_lr: 0.000004
     emo_cls_lr: 0.00001
     speaker_cls_lr: 0.00001
     dim_cls_lr: 0.00001
